@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">SynthControl</string>
+
+    <!--Fragment titles-->
+    <string name="constant_title">Constant mode</string>
+    <string name="scheduler_mode">Scheduler mode</string>
+
+    <!--Constant frame resources-->
+    <string name="constant_mode_title">Constant mode</string>
+    <string name="enter_data">Enter frequency value in MHz:</string>
+    <string name="toggle_on">Turn ON</string>
+    <string name="toggle_off">Turn OFF</string>
+
+    <!--Scheduler frame resources-->
+    <string name="scheduler_mode_title">Scheduler</string>
+    <string name="add_item_btn">Add entry</string>
+    <string name="delete_item_menu_entry">Delete item</string>
+
+
+    <string name="main_title">Enter value in Mhz:</string>
+    <string name="action_settings">Settings</string>
+    <string name="button_title">PUSH ME</string>
+
+    <string-array name="OperationModes">
+        <item>Constant value mode</item>
+        <item>Scheduler mode</item>
+    </string-array>
+
+    <string name="title_activity_add_item_to_schedule">AddItemToScheduleActivity</string>
+
+    <!--Add item to schedule activity resources-->
+    <string name="enter_frequency">Enter frequency in MHz:</string>
+    <string name="enter_time">Enter time in seconds:</string>
+    <string name="apply_btn">Apply</string>
+    <string name="frequency_incorrect">Enter value in range from 35 MHz to 4.4 GHz</string>
+    <string name="time_incorrect">Time is incorrect. Please enter correct value.</string>
+</resources>
