@@ -35,11 +35,13 @@ import ua.pp.lab101.synthesizercontrol.ADParameters.VcoPowerDown;
 import ua.pp.lab101.synthesizercontrol.FTDIConverter.DataConverter;
 
 public class ADBoardController {
-	public ADRegisterController registerController = new ADRegisterController();
-	public DataConverter dataConverter = new DataConverter();
+	private ADRegisterController registerController = new ADRegisterController();
+	private DataConverter dataConverter = new DataConverter();
+
+    private static volatile ADBoardController boardControllerInstance;
 	
 	
-	public ADBoardController() {
+	private ADBoardController() {
 		//Register 5 initialization
 		registerController.setLDPinMode(LDPinMode.DIGITAL_LD);
 		
@@ -89,7 +91,16 @@ public class ADBoardController {
 		registerController.setFractional(0);
     }
 
-
+    public static ADBoardController getInstance(){
+        if (boardControllerInstance == null) {
+            synchronized (ADBoardController.class){
+                if (boardControllerInstance == null) {
+                    boardControllerInstance = new ADBoardController();
+                }
+            }
+        }
+            return boardControllerInstance;
+    }
     /**
      * Method returns code sequence that is could be sent to the device by FTDIdriver.
      * It initializes all 6 registers with default values.

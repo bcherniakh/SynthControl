@@ -24,14 +24,14 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="number"
         android:ems="10"
         android:id="@+id/frequencyValue"
         android:layout_below="@+id/enterValueText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/enterValueText"
-        android:layout_alignEnd="@+id/enterValueText" />
+        android:layout_alignEnd="@+id/enterValueText"
+        android:inputType="numberDecimal" />
 
     <ToggleButton
         android:layout_width="wrap_content"

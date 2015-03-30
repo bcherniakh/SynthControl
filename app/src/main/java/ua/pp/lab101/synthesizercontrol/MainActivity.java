@@ -109,56 +109,26 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
     }
+
     @Override
     protected void onNewIntent(Intent intent)
     {
         String action = intent.getAction();
         if(UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action))
-            /* TODO add some code to handle this intent in fragment */
         {
-//            switch (currect_index)
-//            {
-//                case 4:
-//                    ((OpenDeviceFragment)currentFragment).notifyUSBDeviceAttach(intent);
-//                    break;
-//                case 5:
-//                    ((DeviceUARTFragment)currentFragment).notifyUSBDeviceAttach();
-//                    break;
-//                case 7:
-//                    ((EEPROMFragment)currentFragment).notifyUSBDeviceAttach();
-//                    break;
-//                case 8:
-//                    ((EEPROMUserAreaFragment)currentFragment).notifyUSBDeviceAttach();
-//                    break;
-//                default:
-//                    break;
-//            }
+            Log.i(TAG, "Device attached! I'a activity");
         }
     }
+
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver()
     {
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            String TAG = "FragL";
             String action = intent.getAction();
             if(UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action))
             {
-                Log.i(TAG,"DETACHED...");
-                /* TODO add some code to handle this intent in fragment */
-//                if (currentFragment != null)
-//                {
-//                    switch (currect_index)
-//                    {
-//
-//                        case 5:
-//                            ((DeviceUARTFragment)currentFragment).notifyUSBDeviceDetach();
-//                            break;
-//                        default:
-//                            //((DeviceInformationFragment)currentFragment).onStart();
-//                            break;
-//                    }
-//                }
+                Log.i(TAG,"Device detached!");
             }
         }
     };
