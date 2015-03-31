@@ -41,7 +41,7 @@ public class ConstantModeFragment extends Fragment {
 
     /*System elements. Context and usbdevice*/
     private static Context mDeviceConstantModeContext;
-    private D2xxManager mFtdid2xx = null;
+    private D2xxManager mFtdid2xx;
     private FT_Device mFtDev = null;
     private int mDevCount = -1;
 
@@ -64,6 +64,7 @@ public class ConstantModeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.constant_mode, container, false);
         IntentFilter filter = new IntentFilter();
@@ -120,10 +121,18 @@ public class ConstantModeFragment extends Fragment {
 
     @Override
     public void onStart() {
-        adf = ADBoardController.getInstance();
         super.onStart();
+        adf = ADBoardController.getInstance();
         mDevCount = -1;
-        ConnectFunction();
+
+        if (mFtdid2xx == null) {
+            try {
+                mFtdid2xx = D2xxManager.getInstance(mDeviceConstantModeContext);
+            } catch (D2xxManager.D2xxException e) {
+                e.printStackTrace();
+                Log.e(TAG, "An error occurred.");
+            }
+        }
     }
 
     @Override
@@ -132,6 +141,12 @@ public class ConstantModeFragment extends Fragment {
             mFtDev.close();
         }
         super.onStop();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("curDevCount", mDevCount);
     }
 
     public void ConnectFunction() {
@@ -144,7 +159,6 @@ public class ConstantModeFragment extends Fragment {
             mFtDev = mFtdid2xx.openByIndex(mDeviceConstantModeContext, openIndex);
 
             if (mFtDev == null) {
-                //Toast.makeText(mDeviceConstantModeContext, "mftDev == null", Toast.LENGTH_LONG).show();
                 showToast("mftDev == null");
                 return;
             }
@@ -243,8 +257,6 @@ public class ConstantModeFragment extends Fragment {
                     }
                     e.printStackTrace();
                 }
-            } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-                showToast("Device attached!");
             }
         }
     };

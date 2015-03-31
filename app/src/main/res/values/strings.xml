@@ -1,4 +1,6 @@
 <resources>
+
+    <!--String resources in general -->
     <string name="app_name">SynthControl</string>
 
     <!--Fragment titles-->
