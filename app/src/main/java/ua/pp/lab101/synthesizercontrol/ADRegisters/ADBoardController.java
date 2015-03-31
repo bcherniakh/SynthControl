@@ -107,7 +107,7 @@ public class ADBoardController {
      * @return array of byte.
      */
     public byte[][] geiInitianCommanSequence(){
-        String[] registersChanged = new String[6];
+        loadDefaults();
         return getCommandSequence(ADRegisterController.REGISTER5, ADRegisterController.REGISTER4,
                 ADRegisterController.REGISTER3, ADRegisterController.REGISTER2,
                 ADRegisterController.REGISTER1, ADRegisterController.REGISTER0);
@@ -242,6 +242,56 @@ public class ADBoardController {
             commandSequence[i] = dataConverter.getFinalSequence(registerController.getRegisterData(registers[i]));
         }
         return commandSequence;
+    }
+
+    private void loadDefaults() {
+        //Register 5 initialization
+        registerController.setLDPinMode(LDPinMode.DIGITAL_LD);
+
+        //Register 4 initialization
+        registerController.setFeedbackSelect(FeedbackSelect.FUNDAMENTAL);
+        registerController.setRFDividerSelect(RFDividerSelect.PLUS_64);
+        registerController.setVcoPowerDown(VcoPowerDown.VCO_POWERED_UP);
+        registerController.setBandSelectClockDivider(140);
+        registerController.setMuteTillLockDetect(MuteTillLockDetect.MUTE_DISABLED);
+        registerController.setAuxOutputSelect(AuxOutputSelect.DIVIDED_OUTPUT);
+        registerController.setAuxOutputEnable(AuxOutputEnable.DISABLED);
+        registerController.setAuxOutputPower(AuxOutputPower.MINUS_4_dBm);
+        registerController.setRFOutputEnable(RFOutputEnable.ENABLED);
+        registerController.setOutputPower(OutputPower.PLUS_2_dBm);
+
+        //Register 3 initialization
+        registerController.setBandSelectClockMode(BandSelectClockMode.LOW);
+        registerController.setABP(AntibackslashPulseWidth.FRAC_N);
+        registerController.setChargeCancel(ChargeCancellation.DISABLED);
+        registerController.setCSR(CycleSlipReduction.DISABLED);
+        registerController.setClockDividerMode(ClockDividerMode.CLOCK_DIVIDER_OFF);
+        registerController.setClockDividerValue(0x87);
+
+        //Register 2 initialization
+        registerController.setLowNoiseAndLowSpurModes(NoiseMode.LOW_NOISE_MODE);
+        registerController.setMouxout(Muxout.DIGITAL_LOCK_DETECT);
+        registerController.setReferenceDoublerDBR(ReferenceDoubler.ENABLED);
+        registerController.setReferenceDivideByTwo(ReferenceDivideByTwo.DISABLED);
+        registerController.setRCounter(5);
+        registerController.setDoubleBuffer(DoubleBuffer.DISABLED);
+        registerController.setChargePumpCurrent(ChargePumpCurrentSetting.ICP_5_00_mA);
+        registerController.setLDF(LDF.FRAC_N);
+        registerController.setLDP(LDP.LDP_10_ns);
+        registerController.setPDPolarity(PDPolarity.POSITIVE);
+        registerController.setPowerDown(PowerDown.ENABLED);
+        registerController.setCPThreeState(CPThreeState.DISABLED);
+        registerController.setCounterReset(CounterReset.DISABLED);
+
+        //Register 1 initialization
+        registerController.setPhaseAdjust(PhaseAdjust.OFF);
+        registerController.setPrescaler(Prescaler.PRESCALER_8_9);
+        registerController.setPhase(1);
+        registerController.setModulus(4000);
+
+        //Register 0 initialization
+        registerController.setInteger(640);
+        registerController.setFractional(0);
     }
 	
 }

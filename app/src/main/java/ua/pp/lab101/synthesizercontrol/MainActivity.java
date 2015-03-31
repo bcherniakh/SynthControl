@@ -30,11 +30,8 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
     private D2xxManager ftdiManager = null;
     private static final String TAG = "SynthControl";
 
-    private int mCurrentIndex = -1;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //super.onCreate(savedInstanceState);
         try {
             ftdiManager = D2xxManager.getInstance(this);
             Log.i(TAG, "TFDevice found");
@@ -46,30 +43,17 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
         mConstantModeFragment = new ConstantModeFragment(this, ftdiManager);
 
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
         ModesTitleArray = getResources().getStringArray(R.array.OperationModes);
         mFragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = mFragmentManager
-                .beginTransaction();
-        fragmentTransaction.add(R.id.fragment_container, mOperationModeFragment);
-        fragmentTransaction.commit();
-        getFragmentManager().executePendingTransactions();
 
-        if (savedInstanceState != null) {
-            mCurrentIndex = savedInstanceState.getInt("CurrentIndex");
-            FragmentTransaction fragmentTransaction1 = mFragmentManager
+        if (savedInstanceState == null) {
+            FragmentTransaction fragmentTransaction = mFragmentManager
                     .beginTransaction();
-            if (mCurrentIndex == 0 ) {
-                fragmentTransaction1.replace(R.id.fragment_container, mConstantModeFragment);
-            } else if (mCurrentIndex == 1) {
-                fragmentTransaction1.replace(R.id.fragment_container, mSchedulerModeFragment);
-            }
-            fragmentTransaction1.addToBackStack(null);
-            fragmentTransaction1.commit();
-            getFragmentManager().executePendingTransactions();
+            fragmentTransaction.add(R.id.fragment_container, mOperationModeFragment);
+            fragmentTransaction.commit();
+            mFragmentManager.executePendingTransactions();
         }
-
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
@@ -80,20 +64,14 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
 
     @Override
     public void onPause() {
-        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.remove(mConstantModeFragment);
-            fragmentTransaction.remove(mSchedulerModeFragment);
-            fragmentTransaction.remove(mOperationModeFragment);
-        fragmentTransaction.commit();
-        getFragmentManager().executePendingTransactions();
-        mFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         super.onPause();
     }
+
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putInt("CurrentIndex", mCurrentIndex);
         super.onSaveInstanceState(savedInstanceState);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -120,10 +98,8 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
         FragmentTransaction fragmentTransaction = mFragmentManager
                 .beginTransaction();
         if (currentIndex == 0) {
-            mCurrentIndex = currentIndex;
             fragmentTransaction.replace(R.id.fragment_container, mConstantModeFragment);
         } else if (currentIndex == 1) {
-            mCurrentIndex =currentIndex;
             fragmentTransaction.replace(R.id.fragment_container, mSchedulerModeFragment);
         }
         fragmentTransaction.addToBackStack(null);
@@ -135,10 +111,8 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
     public void onBackPressed() {
         if (getFragmentManager().getBackStackEntryCount() == 0) {
             super.onBackPressed();
-            mCurrentIndex = -1;
         } else {
             getFragmentManager().popBackStack();
-            mCurrentIndex = -1;
         }
     }
 

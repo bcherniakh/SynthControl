@@ -41,25 +41,24 @@ public class ConstantModeFragment extends Fragment {
 
     /*System elements. Context and usbdevice*/
     private static Context mDeviceConstantModeContext;
-    private D2xxManager mFtdid2xx;
+    private D2xxManager mFtdid2xx = null;
     private FT_Device mFtDev = null;
     private int mDevCount = -1;
 
     /**/
     private ADBoardController adf;
     /*Logic workflow variables*/
+
     public ConstantModeFragment() {
         // Required empty public constructor
     }
 
-    /*Overloaded consrtuctor. This anit good but we need contxt and FTDManager to control
+    /*Overloaded constructor. This anit good but we need context and FTDManager to control
     * the device*/
     public ConstantModeFragment(Context parentContext, D2xxManager ftdid2xx) {
         this.mFtdid2xx = ftdid2xx;
         mDeviceConstantModeContext = parentContext;
-
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -124,7 +123,6 @@ public class ConstantModeFragment extends Fragment {
         super.onStart();
         adf = ADBoardController.getInstance();
         mDevCount = -1;
-
         if (mFtdid2xx == null) {
             try {
                 mFtdid2xx = D2xxManager.getInstance(mDeviceConstantModeContext);
@@ -133,12 +131,14 @@ public class ConstantModeFragment extends Fragment {
                 Log.e(TAG, "An error occurred.");
             }
         }
+        connectTheDevice();
     }
 
     @Override
     public void onStop() {
         if (mFtDev != null && mFtDev.isOpen()) {
             mFtDev.close();
+            mFtDev = null;
         }
         super.onStop();
     }
@@ -149,7 +149,7 @@ public class ConstantModeFragment extends Fragment {
         outState.putInt("curDevCount", mDevCount);
     }
 
-    public void ConnectFunction() {
+    public void connectTheDevice() {
         int openIndex = 0;
         if (mDevCount > 0)
             return;
@@ -159,7 +159,7 @@ public class ConstantModeFragment extends Fragment {
             mFtDev = mFtdid2xx.openByIndex(mDeviceConstantModeContext, openIndex);
 
             if (mFtDev == null) {
-                showToast("mftDev == null");
+                showToast("Failed to connect the device!");
                 return;
             }
 
@@ -168,17 +168,12 @@ public class ConstantModeFragment extends Fragment {
                 mFtDev.setBaudRate(115200);
                 mFtDev.setLatencyTimer((byte) 16);
                 mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
-                //Toast.makeText(mDeviceConstantModeContext,
-                //        "devCount:" + mDevCount + " open index:" + openIndex,
-                //        Toast.LENGTH_SHORT).show();
                 showToast( "devCount:" + mDevCount + " open index:" + openIndex);
             } else {
-//                Toast.makeText(mDeviceConstantModeContext,
-//                        "Need to get permission!", Toast.LENGTH_SHORT).show();
                 showToast("Need to get permission!");
             }
         } else {
-            Log.e("j2xx", "mDevCount <= 0");
+            Log.e(TAG, "mDevCount <= 0");
         }
     }
 
