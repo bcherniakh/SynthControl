@@ -56,10 +56,9 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
         }
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         filter.setPriority(500);
-        this.registerReceiver(mUsbReceiver, filter);
+        //this.registerReceiver(mUsbReceiver, filter);
     }
 
     @Override
@@ -121,16 +120,7 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    protected void onNewIntent(Intent intent)
-    {
-        super.onNewIntent(intent);
-        String action = intent.getAction();
-        if(UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action))
-        {
-            Log.i(TAG, "Device attached! I'a activity");
-        }
-    }
+//aa
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver()
     {

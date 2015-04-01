@@ -7,13 +7,21 @@
     <string name="constant_title">Constant mode</string>
     <string name="scheduler_mode">Scheduler mode</string>
 
-    <!--Constant frame resources-->
-    <string name="constant_mode_title">Constant mode</string>
-    <string name="enter_data">Enter frequency value in MHz:</string>
-    <string name="toggle_on">Turn ON</string>
-    <string name="toggle_off">Turn OFF</string>
+    <!--Constant fragment resources-->
+    <string name="const_fragment_title">Constant mode</string>
+    <string name="const_enter_data">Enter frequency value in MHz:</string>
+    <string name="const_toggle_on">Turn ON</string>
+    <string name="const_toggle_off">Turn OFF</string>
+    <string name="const_msg_connection_err">Could not find the device</string>
+    <string name="const_msg_usb_permission_err">Could not find the device</string>
+    <string name="const_msg_device_found">The device was found and initialized</string>
+    <string name="const_msg_frequency_input_err">Frequency input error</string>
+    <string name="const_msg_frequency_range_err">Frequency value must be in range 35 MHz - 4.4 GHz</string>
+    <string name="const_msg_device_disconnected">Device has been disconnected</string>
 
-    <!--Scheduler frame resources-->
+
+
+    <!--Scheduler fragment resources-->
     <string name="scheduler_mode_title">Scheduler</string>
     <string name="add_item_btn">Add entry</string>
     <string name="delete_item_menu_entry">Delete item</string>

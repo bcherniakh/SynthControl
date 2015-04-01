@@ -38,7 +38,7 @@ public class ADBoardController {
 	private ADRegisterController registerController = new ADRegisterController();
 	private DataConverter dataConverter = new DataConverter();
 
-    private static volatile ADBoardController boardControllerInstance;
+    private static ADBoardController boardControllerInstance;
 	
 	
 	private ADBoardController() {
@@ -91,13 +91,9 @@ public class ADBoardController {
 		registerController.setFractional(0);
     }
 
-    public static ADBoardController getInstance(){
+    public static synchronized ADBoardController getInstance(){
         if (boardControllerInstance == null) {
-            synchronized (ADBoardController.class){
-                if (boardControllerInstance == null) {
                     boardControllerInstance = new ADBoardController();
-                }
-            }
         }
             return boardControllerInstance;
     }
@@ -107,7 +103,7 @@ public class ADBoardController {
      * @return array of byte.
      */
     public byte[][] geiInitianCommanSequence(){
-        loadDefaults();
+        //loadDefaults();
         return getCommandSequence(ADRegisterController.REGISTER5, ADRegisterController.REGISTER4,
                 ADRegisterController.REGISTER3, ADRegisterController.REGISTER2,
                 ADRegisterController.REGISTER1, ADRegisterController.REGISTER0);
@@ -116,12 +112,16 @@ public class ADBoardController {
     public byte[][] turnOffTheDevice() {
         //Changing the state of register
         registerController.setPowerDown(PowerDown.ENABLED);
-        return getCommandSequence(ADRegisterController.REGISTER2);
+        return getCommandSequence(ADRegisterController.REGISTER5, ADRegisterController.REGISTER4,
+                ADRegisterController.REGISTER3, ADRegisterController.REGISTER2,
+                ADRegisterController.REGISTER1, ADRegisterController.REGISTER0);
     }
 
     public byte[][] turnOnDevice() {
         registerController.setPowerDown(PowerDown.DISABLED);
-        return getCommandSequence(ADRegisterController.REGISTER2);
+        return getCommandSequence(ADRegisterController.REGISTER5, ADRegisterController.REGISTER4,
+                ADRegisterController.REGISTER3, ADRegisterController.REGISTER2,
+                ADRegisterController.REGISTER1, ADRegisterController.REGISTER0);
     }
 
     /**
@@ -167,8 +167,9 @@ public class ADBoardController {
         setFracValue(fracValue);
 
         //Returns the command sequence to set up output frequency
-        return getCommandSequence(ADRegisterController.REGISTER4, ADRegisterController.REGISTER1,
-                ADRegisterController.REGISTER0);
+        return getCommandSequence(ADRegisterController.REGISTER5, ADRegisterController.REGISTER4,
+                ADRegisterController.REGISTER3, ADRegisterController.REGISTER2,
+                ADRegisterController.REGISTER1, ADRegisterController.REGISTER0);
 		
 	}
 

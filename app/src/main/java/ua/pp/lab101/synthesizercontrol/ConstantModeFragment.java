@@ -7,9 +7,6 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.text.InputFilter;
-import android.text.Spanned;
-import android.text.method.DigitsKeyListener;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -21,8 +18,6 @@ import android.widget.ToggleButton;
 
 import com.ftdi.j2xx.D2xxManager;
 import com.ftdi.j2xx.FT_Device;
-
-import java.text.DecimalFormatSymbols;
 
 import ua.pp.lab101.synthesizercontrol.ADRegisters.ADBoardController;
 
@@ -78,36 +73,36 @@ public class ConstantModeFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mToggleBtn = (ToggleButton) getActivity().findViewById(R.id.applyBtn);
         mFrequencyValue = (EditText) getActivity().findViewById(R.id.frequencyValue);
-        mFrequencyValue.setFilters(new InputFilter[] {
-                new DigitsKeyListener(Boolean.FALSE, Boolean.TRUE) {
-                    int beforeDecimal = 4, afterDecimal = 3;
-
-                    @Override
-                    public CharSequence filter(CharSequence source, int start, int end,
-                                               Spanned dest, int dstart, int dend) {
-                        DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-
-                        String ds = String.valueOf(dfs.getDecimalSeparator());
-                        String temp = mFrequencyValue.getText() + source.toString();
-
-                        if (temp.equals(ds)) {
-                            return "0".concat(ds);
-                        }
-                        else if (temp.toString().indexOf(ds) == -1) {
-                            if (temp.length() > beforeDecimal) {
-                                return "";
-                            }
-                        } else {
-                            temp = temp.substring(temp.indexOf(ds) + 1);
-                            if (temp.length() > afterDecimal) {
-                                return "";
-                            }
-                        }
-
-                        return super.filter(source, start, end, dest, dstart, dend);
-                    }
-                }
-        });
+//        mFrequencyValue.setFilters(new InputFilter[] {
+//                new DigitsKeyListener(Boolean.FALSE, Boolean.TRUE) {
+//                    int beforeDecimal = 4, afterDecimal = 3;
+//
+//                    @Override
+//                    public CharSequence filter(CharSequence source, int start, int end,
+//                                               Spanned dest, int dstart, int dend) {
+//                        DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+//
+//                        String ds = String.valueOf(dfs.getDecimalSeparator());
+//                        String temp = mFrequencyValue.getText() + source.toString();
+//
+//                        if (temp.equals(ds)) {
+//                            return "0".concat(ds);
+//                        }
+//                        else if (temp.toString().indexOf(ds) == -1) {
+//                            if (temp.length() > beforeDecimal) {
+//                                return "";
+//                            }
+//                        } else {
+//                            temp = temp.substring(temp.indexOf(ds) + 1);
+//                            if (temp.length() > afterDecimal) {
+//                                return "";
+//                            }
+//                        }
+//
+//                        return super.filter(source, start, end, dest, dstart, dend);
+//                    }
+//                }
+//        });
         if (mToggleBtn != null) {
             mToggleBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -128,7 +123,7 @@ public class ConstantModeFragment extends Fragment {
                 mFtdid2xx = D2xxManager.getInstance(mDeviceConstantModeContext);
             } catch (D2xxManager.D2xxException e) {
                 e.printStackTrace();
-                Log.e(TAG, "An error occurred.");
+                Log.e(TAG, "Failed open FT245 device.");
             }
         }
         connectTheDevice();
@@ -137,8 +132,10 @@ public class ConstantModeFragment extends Fragment {
     @Override
     public void onStop() {
         if (mFtDev != null && mFtDev.isOpen()) {
+            writeData(adf.turnOffTheDevice());
             mFtDev.close();
             mFtDev = null;
+            mToggleBtn.setChecked(false);
         }
         super.onStop();
     }
@@ -159,21 +156,23 @@ public class ConstantModeFragment extends Fragment {
             mFtDev = mFtdid2xx.openByIndex(mDeviceConstantModeContext, openIndex);
 
             if (mFtDev == null) {
-                showToast("Failed to connect the device!");
+                showToast(getString(R.string.const_msg_connection_err));
                 return;
             }
 
-            if (true == mFtDev.isOpen()) {
+            if (mFtDev.isOpen()) {
                 mFtDev.resetDevice();
-                mFtDev.setBaudRate(115200);
+                mFtDev.setBaudRate(9600);
                 mFtDev.setLatencyTimer((byte) 16);
                 mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
-                showToast( "devCount:" + mDevCount + " open index:" + openIndex);
+                writeData(adf.geiInitianCommanSequence());
+                showToast(getString(R.string.const_msg_device_found));
             } else {
-                showToast("Need to get permission!");
+                showToast(getString(R.string.const_msg_usb_permission_err));
             }
         } else {
             Log.e(TAG, "mDevCount <= 0");
+            showToast(getString(R.string.const_msg_connection_err));
         }
     }
 
@@ -184,6 +183,9 @@ public class ConstantModeFragment extends Fragment {
 
 //    @Override
 //    public void onDetach() {
+//        writeData(adf.turnOffTheDevice());
+//        mFtDev.close();
+//        mFtDev = null;
 //        super.onDetach();
 //
 //    }
@@ -192,16 +194,23 @@ public class ConstantModeFragment extends Fragment {
     public void buttonSendPressed() {
         if (mFtDev != null) {
             if (mToggleBtn.isChecked()) {
-                double frequencyValue = Double.parseDouble(mFrequencyValue.getText().toString());
+                double frequencyValue = 0;
+                try {
+                    frequencyValue = Double.parseDouble(mFrequencyValue.getText().toString());
+                } catch (Exception parseException) {
+                    Log.e(TAG, "Parse double error occurred");
+                    showToast(getString(R.string.const_msg_frequency_input_err));
+                    mToggleBtn.setChecked(false);
+                    return;
+                }
 
                 if ((frequencyValue < 35) || (frequencyValue > 4400)) {
-                    showToast("Frequency value not is in range");
+                    showToast(getString(R.string.const_msg_frequency_range_err));
                     mToggleBtn.setChecked(false);
                     return;
                 }
 
                 Log.i(TAG, "Value to be set: " + Double.toString(frequencyValue) + " MHz");
-                writeData(adf.geiInitianCommanSequence());
                 writeData(adf.setFrequency(frequencyValue));
                 writeData(adf.turnOnDevice());
             } else {
@@ -222,8 +231,7 @@ public class ConstantModeFragment extends Fragment {
     }
 
     private int writeDataToRegister(byte[] data) {
-        int result = mFtDev.write(data);
-        return result;
+        return mFtDev.write(data);
     }
 
     private void showToast(String textToShow) {
@@ -243,13 +251,8 @@ public class ConstantModeFragment extends Fragment {
                 try {
                     mDevCount = -1;
                     mFtDev = null;
-                    showToast("Device disconnected!");
+                    showToast(getString(R.string.const_msg_device_disconnected));
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    String s = e.getMessage();
-                    if (s != null) {
-                        //Error_Information.setText(s);
-                    }
                     e.printStackTrace();
                 }
             }

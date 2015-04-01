@@ -8,13 +8,13 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/constant_mode_title"
+        android:text="@string/const_fragment_title"
         android:id="@+id/titleText" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/enter_data"
+        android:text="@string/const_enter_data"
         android:id="@+id/enterValueText"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
@@ -36,7 +36,7 @@
     <ToggleButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/toggle_on"
+        android:text="@string/const_toggle_on"
         android:id="@+id/applyBtn"
         android:layout_alignBottom="@+id/frequencyValue"
         android:layout_alignParentRight="true"
