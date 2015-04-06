@@ -39,7 +39,7 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
             Log.e(TAG, "No FTDevice conected");
         }
 
-        mConstantModeFragment = new ConstantModeFragment(this, ftdiManager);
+        mConstantModeFragment = new ConstantModeFragment();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);

@@ -34,25 +34,8 @@ public class ConstantModeFragment extends Fragment {
     private ToggleButton mToggleBtn = null;
     private EditText mFrequencyValue;
 
-    /*System elements. Context and usbdevice*/
-    private static Context mDeviceConstantModeContext;
-    private D2xxManager mFtdid2xx = null;
-    private FT_Device mFtDev = null;
-    private int mDevCount = -1;
-
-    /**/
-    private ADBoardController adf;
-    /*Logic workflow variables*/
-
     public ConstantModeFragment() {
         // Required empty public constructor
-    }
-
-    /*Overloaded constructor. This anit good but we need context and FTDManager to control
-    * the device*/
-    public ConstantModeFragment(Context parentContext, D2xxManager ftdid2xx) {
-        this.mFtdid2xx = ftdid2xx;
-        mDeviceConstantModeContext = parentContext;
     }
 
     @Override
@@ -61,9 +44,6 @@ public class ConstantModeFragment extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.constant_mode, container, false);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        mDeviceConstantModeContext.getApplicationContext().registerReceiver(mUsbPlugEvents, filter);
         return view;
 
     }
@@ -73,36 +53,6 @@ public class ConstantModeFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mToggleBtn = (ToggleButton) getActivity().findViewById(R.id.applyBtn);
         mFrequencyValue = (EditText) getActivity().findViewById(R.id.frequencyValue);
-//        mFrequencyValue.setFilters(new InputFilter[] {
-//                new DigitsKeyListener(Boolean.FALSE, Boolean.TRUE) {
-//                    int beforeDecimal = 4, afterDecimal = 3;
-//
-//                    @Override
-//                    public CharSequence filter(CharSequence source, int start, int end,
-//                                               Spanned dest, int dstart, int dend) {
-//                        DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-//
-//                        String ds = String.valueOf(dfs.getDecimalSeparator());
-//                        String temp = mFrequencyValue.getText() + source.toString();
-//
-//                        if (temp.equals(ds)) {
-//                            return "0".concat(ds);
-//                        }
-//                        else if (temp.toString().indexOf(ds) == -1) {
-//                            if (temp.length() > beforeDecimal) {
-//                                return "";
-//                            }
-//                        } else {
-//                            temp = temp.substring(temp.indexOf(ds) + 1);
-//                            if (temp.length() > afterDecimal) {
-//                                return "";
-//                            }
-//                        }
-//
-//                        return super.filter(source, start, end, dest, dstart, dend);
-//                    }
-//                }
-//        });
         if (mToggleBtn != null) {
             mToggleBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -116,64 +66,16 @@ public class ConstantModeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        adf = ADBoardController.getInstance();
-        mDevCount = -1;
-        if (mFtdid2xx == null) {
-            try {
-                mFtdid2xx = D2xxManager.getInstance(mDeviceConstantModeContext);
-            } catch (D2xxManager.D2xxException e) {
-                e.printStackTrace();
-                Log.e(TAG, "Failed open FT245 device.");
-            }
-        }
-        connectTheDevice();
     }
 
     @Override
     public void onStop() {
-        if (mFtDev != null && mFtDev.isOpen()) {
-            writeData(adf.turnOffTheDevice());
-            mFtDev.close();
-            mFtDev = null;
-            mToggleBtn.setChecked(false);
-        }
         super.onStop();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt("curDevCount", mDevCount);
-    }
-
-    public void connectTheDevice() {
-        int openIndex = 0;
-        if (mDevCount > 0)
-            return;
-
-        mDevCount = mFtdid2xx.createDeviceInfoList(mDeviceConstantModeContext);
-        if (mDevCount > 0) {
-            mFtDev = mFtdid2xx.openByIndex(mDeviceConstantModeContext, openIndex);
-
-            if (mFtDev == null) {
-                showToast(getString(R.string.const_msg_connection_err));
-                return;
-            }
-
-            if (mFtDev.isOpen()) {
-                mFtDev.resetDevice();
-                mFtDev.setBaudRate(9600);
-                mFtDev.setLatencyTimer((byte) 16);
-                mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
-                writeData(adf.geiInitianCommanSequence());
-                showToast(getString(R.string.const_msg_device_found));
-            } else {
-                showToast(getString(R.string.const_msg_usb_permission_err));
-            }
-        } else {
-            Log.e(TAG, "mDevCount <= 0");
-            showToast(getString(R.string.const_msg_connection_err));
-        }
     }
 
 //    @Override
@@ -192,7 +94,7 @@ public class ConstantModeFragment extends Fragment {
 
     /*Main logic methods*/
     public void buttonSendPressed() {
-        if (mFtDev != null) {
+
             if (mToggleBtn.isChecked()) {
                 double frequencyValue = 0;
                 try {
@@ -211,52 +113,22 @@ public class ConstantModeFragment extends Fragment {
                 }
 
                 Log.i(TAG, "Value to be set: " + Double.toString(frequencyValue) + " MHz");
-                writeData(adf.setFrequency(frequencyValue));
-                writeData(adf.turnOnDevice());
+                //starting the service with the task
+                getActivity().startService(new Intent(getActivity(),BoardManagerService.class).putExtra("frequency", frequencyValue));
             } else {
-                writeData(adf.turnOffTheDevice());
+                //stopping service
+                getActivity().stopService(new Intent(getActivity(),BoardManagerService.class));
                 Log.i(TAG, "Button toggled off");
             }
-        } else {
-            Log.e(TAG, "No device present.");
-            mToggleBtn.setChecked(false);
-        }
     }
 
-    private void writeData(byte[][] commands) {
-        for (int i = 0; i < commands.length; i++) {
-            int result = writeDataToRegister(commands[i]);
-            Log.i(TAG, Integer.toString(result) + " bytes wrote to reg" + Integer.toString(i));
-        }
-    }
 
-    private int writeDataToRegister(byte[] data) {
-        return mFtDev.write(data);
-    }
 
     private void showToast(String textToShow) {
-        Toast toast = Toast.makeText(mDeviceConstantModeContext,
+        Toast toast = Toast.makeText(getActivity(),
                 textToShow,
                 Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
-
-    /*Broadcast receiver realization for hotplug realization*/
-    private BroadcastReceiver mUsbPlugEvents = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-                try {
-                    mDevCount = -1;
-                    mFtDev = null;
-                    showToast(getString(R.string.const_msg_device_disconnected));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
-
 }
