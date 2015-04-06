@@ -26,7 +26,6 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
     private ConstantModeFragment mConstantModeFragment = null;
     private SchedulerModeFragment mSchedulerModeFragment = new SchedulerModeFragment();
 
-    private FT_Device ftdiDevice = null;
     private D2xxManager ftdiManager = null;
     private static final String TAG = "SynthControl";
 
