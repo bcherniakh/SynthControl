@@ -11,8 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import ua.pp.lab101.synthesizercontrol.ADParameters.DoubleBuffer;
-
 public class AddItemToScheduleActivity extends ActionBarActivity implements View.OnClickListener{
     private Button applyBtn = null;
     private EditText frequencyValue = null;

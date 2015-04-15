@@ -1,10 +1,6 @@
 package ua.pp.lab101.synthesizercontrol;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.hardware.usb.UsbManager;
+import android.app.Activity;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -16,10 +12,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.ftdi.j2xx.D2xxManager;
-import com.ftdi.j2xx.FT_Device;
-
-import ua.pp.lab101.synthesizercontrol.ADRegisters.ADBoardController;
+import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 
 /**
  * Fragment that presents Constant frequency operation mode.
@@ -27,17 +20,22 @@ import ua.pp.lab101.synthesizercontrol.ADRegisters.ADBoardController;
  * The fragment does not shuts down the synthesizer when loses focus.
  */
 public class ConstantModeFragment extends Fragment {
+
+    /*Service members*/
+    private IServiceDistributor mServiceDistributor;
+    private BoardManagerService mService;
+    private boolean mBound;
+
     /*Constants*/
-    private static final String TAG = "SynthesizerControl";
+    private static final String LOG_TAG = "SControlConstant";
 
     /*View elements: */
     private ToggleButton mToggleBtn = null;
     private EditText mFrequencyValue;
 
     public ConstantModeFragment() {
-        // Required empty public constructor
     }
-
+    /*Fragment lifecycle methods */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -78,19 +76,23 @@ public class ConstantModeFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
-//    @Override
-//    public void onAttach(Activity activity) {
-//        super.onAttach(activity);
-//    }
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mServiceDistributor = (IServiceDistributor) activity;
+            mService = mServiceDistributor.getService();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+        setRetainInstance(true);
+    }
 
-//    @Override
-//    public void onDetach() {
-//        writeData(adf.turnOffTheDevice());
-//        mFtDev.close();
-//        mFtDev = null;
-//        super.onDetach();
-//
-//    }
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
 
     /*Main logic methods*/
     public void buttonSendPressed() {
@@ -100,7 +102,7 @@ public class ConstantModeFragment extends Fragment {
                 try {
                     frequencyValue = Double.parseDouble(mFrequencyValue.getText().toString());
                 } catch (Exception parseException) {
-                    Log.e(TAG, "Parse double error occurred");
+                    Log.e(LOG_TAG, "Parse double error occurred");
                     showToast(getString(R.string.const_msg_frequency_input_err));
                     mToggleBtn.setChecked(false);
                     return;
@@ -111,18 +113,17 @@ public class ConstantModeFragment extends Fragment {
                     mToggleBtn.setChecked(false);
                     return;
                 }
-
-                Log.i(TAG, "Value to be set: " + Double.toString(frequencyValue) + " MHz");
-                //starting the service with the task
-                getActivity().startService(new Intent(getActivity(),BoardManagerService.class).putExtra("frequency", frequencyValue));
+                if (mService == null) {
+                    showToast("Fuck this shit");
+                    return;
+                }
+                Log.i(LOG_TAG, "Value to be set: " + Double.toString(frequencyValue) + " MHz");
+                mService.changeNotificationText(String.valueOf(frequencyValue));
             } else {
                 //stopping service
-                getActivity().stopService(new Intent(getActivity(),BoardManagerService.class));
-                Log.i(TAG, "Button toggled off");
+                Log.i(LOG_TAG, "Button toggled off");
             }
     }
-
-
 
     private void showToast(String textToShow) {
         Toast toast = Toast.makeText(getActivity(),

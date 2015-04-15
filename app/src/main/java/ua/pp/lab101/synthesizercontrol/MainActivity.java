@@ -1,22 +1,26 @@
 package ua.pp.lab101.synthesizercontrol;
 
-import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.hardware.usb.UsbManager;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.ftdi.j2xx.D2xxManager;
-import com.ftdi.j2xx.FT_Device;
+import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 
-public class MainActivity extends ActionBarActivity implements OperationModeFragment.OperationModeListener {
+public class MainActivity extends ActionBarActivity
+        implements OperationModeFragment.OperationModeListener, IMainConstants, IServiceDistributor {
+    /*Service members*/
+    private BoardManagerService mService;
+    private BoardManagerService.LocalBinder mBinder;
+    private boolean mBound;
 
     public static String[] ModesTitleArray;
     public static final int UNSELECTED = -1;
@@ -26,27 +30,19 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
     private ConstantModeFragment mConstantModeFragment = null;
     private SchedulerModeFragment mSchedulerModeFragment = new SchedulerModeFragment();
 
-    private D2xxManager ftdiManager = null;
-    private static final String TAG = "SynthControl";
+    private static final String LOG_TAG = "SynthControlMain";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        try {
-            ftdiManager = D2xxManager.getInstance(this);
-            Log.i(TAG, "TFDevice found");
-        } catch (D2xxManager.D2xxException ex) {
-            ex.printStackTrace();
-            Log.e(TAG, "No FTDevice conected");
-        }
-
-        mConstantModeFragment = new ConstantModeFragment();
-
         super.onCreate(savedInstanceState);
+        Log.d(LOG_TAG, "onCreate");
+
         setContentView(R.layout.activity_main);
         ModesTitleArray = getResources().getStringArray(R.array.OperationModes);
-        mFragmentManager = getFragmentManager();
 
+        mFragmentManager = getFragmentManager();
         if (savedInstanceState == null) {
+            Log.d(LOG_TAG, "Rebuilding fragments");
             FragmentTransaction fragmentTransaction = mFragmentManager
                     .beginTransaction();
             fragmentTransaction.add(R.id.fragment_container, mOperationModeFragment);
@@ -54,22 +50,57 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
             mFragmentManager.executePendingTransactions();
         }
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        filter.setPriority(500);
-        //this.registerReceiver(mUsbReceiver, filter);
+        startService(new Intent(this, BoardManagerService.class).putExtra("Text", "Create title"));
+
+        /*binding the BoardManagerService */
+        Intent intent = new Intent(this, BoardManagerService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+        if (mBound) {
+            mService.changeNotificationText("Fucking bound!");
+        }
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        /*Creating constant mode fragment*/
+        Bundle bundle = new Bundle();
+        ReferenceContainer fragmentData = new ReferenceContainer(mService, mBinder);
+        bundle.putSerializable(TAG_REF_DATA, fragmentData);
+        mConstantModeFragment = new ConstantModeFragment();
+        mConstantModeFragment.setArguments(bundle);
     }
 
     @Override
     public void onPause() {
+        Log.d(LOG_TAG, "onPause");
         super.onPause();
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "Saving instance");
         super.onSaveInstanceState(savedInstanceState);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(LOG_TAG, "On fucking stop acts!");
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(LOG_TAG, "onDestroy");
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+        super.onDestroy();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -83,7 +114,6 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
@@ -119,23 +149,25 @@ public class MainActivity extends ActionBarActivity implements OperationModeFrag
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-//aa
+    private ServiceConnection mConnection = new ServiceConnection() {
 
-    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver()
-    {
         @Override
-        public void onReceive(Context context, Intent intent)
-        {
-            String action = intent.getAction();
-            if(UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action))
-            {
-                Log.i(TAG,"Device detached!");
-            }
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            mBinder = (BoardManagerService.LocalBinder) service;
+            mService = mBinder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
         }
     };
 
-    public D2xxManager getFtdiManager() {
-        return this.ftdiManager;
+    @Override
+    public BoardManagerService getService() {
+        return mService;
     }
 }
-

@@ -29,14 +29,8 @@ public class OperationModeFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-        // TODO: Change Adapter to display your content
-        // Set the list adapter for the ListView
-        // Discussed in more detail in the user interface classes lesson
         setListAdapter(new ArrayAdapter<String>(getActivity(),
                 R.layout.list_modes, MainActivity.ModesTitleArray));
-
         // If a title has already been selected in the past, reset the selection state now
 //        if (currentIndex != MainActivity.UNSELECTED) {
 //            setSelection(currentIndex);
@@ -47,19 +41,13 @@ public class OperationModeFragment extends ListFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try {
-            mListener = (OperationModeListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
-//    @Override
-//    public void onDetach() {
-//        super.onDetach();
-//        mListener = null;
-//    }
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
 
 
     @Override
