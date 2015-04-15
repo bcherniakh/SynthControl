@@ -40,6 +40,7 @@ public class MainActivity extends ActionBarActivity
         setContentView(R.layout.activity_main);
         ModesTitleArray = getResources().getStringArray(R.array.OperationModes);
 
+        mConstantModeFragment = new ConstantModeFragment();
         mFragmentManager = getFragmentManager();
         if (savedInstanceState == null) {
             Log.d(LOG_TAG, "Rebuilding fragments");
@@ -50,15 +51,11 @@ public class MainActivity extends ActionBarActivity
             mFragmentManager.executePendingTransactions();
         }
 
-        startService(new Intent(this, BoardManagerService.class).putExtra("Text", "Create title"));
+        //startService(new Intent(this, BoardManagerService.class).putExtra("Text", "Create title"));
 
         /*binding the BoardManagerService */
         Intent intent = new Intent(this, BoardManagerService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-
-        if (mBound) {
-            mService.changeNotificationText("Fucking bound!");
-        }
 
 
     }
@@ -66,12 +63,6 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onStart() {
         super.onStart();
-        /*Creating constant mode fragment*/
-        Bundle bundle = new Bundle();
-        ReferenceContainer fragmentData = new ReferenceContainer(mService, mBinder);
-        bundle.putSerializable(TAG_REF_DATA, fragmentData);
-        mConstantModeFragment = new ConstantModeFragment();
-        mConstantModeFragment.setArguments(bundle);
     }
 
     @Override

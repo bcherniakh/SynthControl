@@ -65,7 +65,7 @@ public class BoardManagerService extends Service {
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotificationBuilder = new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Board manager service")
-                .setContentText("Set up the device");
+                .setContentText("No device present");
         Intent resultIntent = new Intent(this, MainActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(MainActivity.class);
@@ -84,7 +84,6 @@ public class BoardManagerService extends Service {
         mDevCount = mFtdid2xx.createDeviceInfoList(this);
         if (mDevCount > 0) {
             mFtDev = mFtdid2xx.openByIndex(this, openIndex);
-
             if (mFtDev == null) {
                 return;
             }
@@ -96,6 +95,7 @@ public class BoardManagerService extends Service {
                 mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
                 writeData(adf.geiInitianCommanSequence());
                 Log.d(LOG_TAG, "Device vas found and configured");
+                changeNotificationText("Device connected");
             } else {
                 Log.d(LOG_TAG, "permission error");
             }
@@ -124,7 +124,6 @@ public class BoardManagerService extends Service {
         String text = intent.getStringExtra("Text");
         mNotificationBuilder.setContentText(text);
         mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
-
         return START_NOT_STICKY;
     }
 
@@ -186,5 +185,4 @@ public class BoardManagerService extends Service {
         mNotificationBuilder.setContentText(text);
         mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
     }
-
 }
