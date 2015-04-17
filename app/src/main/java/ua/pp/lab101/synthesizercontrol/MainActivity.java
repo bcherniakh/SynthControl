@@ -19,7 +19,7 @@ public class MainActivity extends ActionBarActivity
         implements OperationModeFragment.OperationModeListener, IMainConstants, IServiceDistributor {
     /*Service members*/
     private BoardManagerService mService;
-    private BoardManagerService.LocalBinder mBinder;
+    private BoardManagerService.BoardManagerBinder mBinder;
     private boolean mBound;
 
     public static String[] ModesTitleArray;
@@ -51,7 +51,7 @@ public class MainActivity extends ActionBarActivity
             mFragmentManager.executePendingTransactions();
         }
 
-        //startService(new Intent(this, BoardManagerService.class).putExtra("Text", "Create title"));
+        startService(new Intent(this, BoardManagerService.class).putExtra("Text", "Create title"));
 
         /*binding the BoardManagerService */
         Intent intent = new Intent(this, BoardManagerService.class);
@@ -86,10 +86,10 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onDestroy() {
         Log.d(LOG_TAG, "onDestroy");
-        if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
-        }
+//        if (mBound) {
+//            unbindService(mConnection);
+//            mBound = false;
+//        }
         super.onDestroy();
     }
     @Override
@@ -106,7 +106,13 @@ public class MainActivity extends ActionBarActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_stop_service) {
+            if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+            }
+            Intent intent = new Intent(this, BoardManagerService.class);
+            stopService(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -146,7 +152,7 @@ public class MainActivity extends ActionBarActivity
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            mBinder = (BoardManagerService.LocalBinder) service;
+            mBinder = (BoardManagerService.BoardManagerBinder) service;
             mService = mBinder.getService();
             mBound = true;
         }

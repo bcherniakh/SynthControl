@@ -9,7 +9,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.usb.UsbManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -23,7 +27,7 @@ import ua.pp.lab101.synthesizercontrol.adregisters.ADBoardController;
 
 public class BoardManagerService extends Service {
     //IBinder realization that will be returned in binding process
-    private IBinder mLocalBinder = new LocalBinder();
+    private IBinder mLocalBinder = new BoardManagerBinder();
 
     private static final int ONGOING_NOTIFICATION_ID = 1488;
     private static final String LOG_TAG = "BoardService";
@@ -39,7 +43,11 @@ public class BoardManagerService extends Service {
 
     /**/
     private ADBoardController adf;
-    /*Logic workflow variables*/
+
+    /*workflow variables*/
+    private boolean mDeviceConnected;
+    private double mCurrentFrequency;
+    CurrentStatus mServiceStatus;
 
     public BoardManagerService() {
     }
@@ -48,7 +56,34 @@ public class BoardManagerService extends Service {
         super.onCreate();
         Log.d(LOG_TAG, "onCreate method");
         es = Executors.newFixedThreadPool(1);
+
+        //getting an instance of Board controller
         adf = ADBoardController.getInstance();
+
+
+        //if the service starts for the firs time it's status is idle.
+        //Creating notification and declaring the service as foreground
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotificationBuilder = new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(getString(R.string.bms_notification_title))
+                .setContentText(getString(R.string.bms_notification_content_title)
+                        + getString(R.string.bms_notification_content_not_connected));
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mNotificationBuilder.setContentIntent(resultPendingIntent);
+        mNotificationBuilder.setSubText(getString(R.string.bms_notification_subcont_title)
+            + getString(R.string.bms_notification_subcont_none));
+        startForeground(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        filter.setPriority(500);
+        this.registerReceiver(mUsbReceiver, filter);
 
         //Opening the mFtdid2xx device
         if (mFtdid2xx == null) {
@@ -60,20 +95,6 @@ public class BoardManagerService extends Service {
             }
         }
         connectTheDevice();
-
-        //Creating notification and declaring the service as foreground
-        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotificationBuilder = new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Board manager service")
-                .setContentText("No device present");
-        Intent resultIntent = new Intent(this, MainActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MainActivity.class);
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mNotificationBuilder.setContentIntent(resultPendingIntent);
-        startForeground (ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
     }
 
     public void connectTheDevice() {
@@ -89,19 +110,25 @@ public class BoardManagerService extends Service {
             }
 
             if (mFtDev.isOpen()) {
+                mDeviceConnected = true;
                 mFtDev.resetDevice();
                 mFtDev.setBaudRate(9600);
                 mFtDev.setLatencyTimer((byte) 16);
                 mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
                 writeData(adf.geiInitianCommanSequence());
                 Log.d(LOG_TAG, "Device vas found and configured");
-                changeNotificationText("Device connected");
+                changeNotificationText( getString(R.string.bms_notification_content_title)
+                        + getString(R.string.bms_notification_content_connected));
             } else {
-                Log.d(LOG_TAG, "permission error");
+                Log.e(LOG_TAG, "permission error");
             }
         } else {
             Log.e(LOG_TAG, "Could not open the device");
         }
+    }
+
+    public void configureTheDevice() {
+
     }
 
     public void onDestroy() {
@@ -111,19 +138,12 @@ public class BoardManagerService extends Service {
             mFtDev.close();
             mFtDev = null;
         }
+        this.unregisterReceiver(mUsbReceiver);
         super.onDestroy();
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(LOG_TAG, "onStart method called");
-        //double frequency = intent.getDoubleExtra("frequency", 1);
-//        if (frequency > 0) {
-//            ADFWriterRun mr = new ADFWriterRun(frequency, startId);
-//            es.execute(mr);
-//        }
-        String text = intent.getStringExtra("Text");
-        mNotificationBuilder.setContentText(text);
-        mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
         return START_NOT_STICKY;
     }
 
@@ -136,14 +156,14 @@ public class BoardManagerService extends Service {
         int startId;
 
 
-        public ADFWriterRun(double frequencyValue, int startId) {
+        public ADFWriterRun(double frequencyValue) {
             this.frequencyValue = frequencyValue;
-            this.startId = startId;
-            Log.d(LOG_TAG, "Write run" + startId + " created");
+            this.startId = 0;
+            Log.d(LOG_TAG, "Write run created");
         }
 
         public void run() {
-            Log.d(LOG_TAG, "Write run" + startId + " started");
+            Log.d(LOG_TAG, "Write run started");
             writeData(adf.setFrequency(frequencyValue));
             writeData(adf.turnOnDevice());
             try {
@@ -157,7 +177,7 @@ public class BoardManagerService extends Service {
 
         void stop() {
             Log.d(LOG_TAG, "service stops" + startId + " end, stopSelf(" + startId + ")");
-            stopSelf(startId);
+            //stopSelf(startId);
         }
     }
 
@@ -172,7 +192,7 @@ public class BoardManagerService extends Service {
         return mFtDev.write(data);
     }
 
-    public class LocalBinder extends Binder {
+    public class BoardManagerBinder extends Binder {
         public BoardManagerService getService() {
             return BoardManagerService.this;
         }
@@ -180,9 +200,49 @@ public class BoardManagerService extends Service {
 
     /*public API classes*/
     public void changeNotificationText(String text) {
-        Log.d(LOG_TAG, "methos called. Text: " + text);
+        Log.d(LOG_TAG, "method called. Text: " + text);
         if (text == null) return;
         mNotificationBuilder.setContentText(text);
         mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
     }
+
+    public void setFrequency(double frequency) {
+        if (frequency > 0) {
+            ADFWriterRun mr = new ADFWriterRun(frequency);
+            es.execute(mr);
+        }
+    }
+
+    /*Lol shitcode style test programming YOBA*/
+    /*this BroadcastReceiver receives state change of the device connection and manage all
+     *the changes in the Board service logic and enforces the control activity to change it
+     *it state and visualize current situation.
+     */
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            String action = intent.getAction();
+            if(UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action))
+            {
+                Log.d(LOG_TAG,"Device detached!");
+                /*TODO create
+                 * 1)realization of operation control activity notification
+                 * 2)realization of current operation state stop&save
+                 */
+                mDeviceConnected = false;
+                changeNotificationText(getString(R.string.bms_notification_content_title)
+                        + getString(R.string.bms_notification_content_not_connected));
+
+            } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+                Log.d(LOG_TAG,"Device attached!");
+                /*TODO create
+                 * 1)realization of operation control activity notification
+                 * 2)realization of current operation state stop&save
+                 */
+                connectTheDevice();
+            }
+        }
+    };
 }

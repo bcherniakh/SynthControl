@@ -119,6 +119,7 @@ public class ConstantModeFragment extends Fragment {
                 }
                 Log.i(LOG_TAG, "Value to be set: " + Double.toString(frequencyValue) + " MHz");
                 mService.changeNotificationText(String.valueOf(frequencyValue));
+                mService.setFrequency(frequencyValue);
             } else {
                 //stopping service
                 Log.i(LOG_TAG, "Button toggled off");

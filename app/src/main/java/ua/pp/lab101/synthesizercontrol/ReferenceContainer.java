@@ -9,9 +9,9 @@ import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
  */
 public class ReferenceContainer implements Serializable {
     private BoardManagerService mService;
-    private BoardManagerService.LocalBinder mBinder;
+    private BoardManagerService.BoardManagerBinder mBinder;
 
-    public ReferenceContainer(BoardManagerService service, BoardManagerService.LocalBinder binder) {
+    public ReferenceContainer(BoardManagerService service, BoardManagerService.BoardManagerBinder binder) {
         mBinder = binder;
         mService = service;
     }
@@ -20,7 +20,7 @@ public class ReferenceContainer implements Serializable {
         return mService;
     }
 
-    public BoardManagerService.LocalBinder getBinder() {
+    public BoardManagerService.BoardManagerBinder getBinder() {
         return mBinder;
     }
 }
