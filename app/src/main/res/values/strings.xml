@@ -44,10 +44,12 @@
     <string name="time_incorrect">Time is incorrect. Please enter correct value.</string>
 
     <!--BoardManagerService service resourses-->
-    <string name="bms_notification_title">Board manager</string>
-    <string name="bms_notification_content_not_connected">Device not connected</string>
-    <string name="bms_notification_content_connected">device connected</string>
-    <string name="bms_notification_content_title">Current status: </string>
-    <string name="bms_notification_subcont_title">Frequency: </string>
-    <string name="bms_notification_subcont_none">none</string>
+    <string name="bms_notif_title">Board manager</string>
+    <string name="bms_notif_content_not_connected">Device not connected</string>
+    <string name="bms_notif_content_connected">device connected</string>
+    <string name="bms_notif_content_title">Current status: </string>
+    <string name="bms_notif_subcont_title">Frequency: </string>
+    <string name="bms_notif_subcont_none">none</string>
+    <string name="bms_notif_content_found">Device found</string>
+    <string name="bms_notif_subcont_plase_tap">Please, tap to connect!</string>
 </resources>

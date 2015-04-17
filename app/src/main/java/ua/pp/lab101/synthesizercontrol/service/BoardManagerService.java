@@ -65,18 +65,18 @@ public class BoardManagerService extends Service {
         //Creating notification and declaring the service as foreground
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotificationBuilder = new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(getString(R.string.bms_notification_title))
-                .setContentText(getString(R.string.bms_notification_content_title)
-                        + getString(R.string.bms_notification_content_not_connected));
+                .setContentTitle(getString(R.string.bms_notif_title))
+                .setContentText(getString(R.string.bms_notif_content_title)
+                        + getString(R.string.bms_notif_content_not_connected));
         Intent resultIntent = new Intent(this, MainActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(MainActivity.class);
         stackBuilder.addNextIntent(resultIntent);
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT
-                );
+        );
         mNotificationBuilder.setContentIntent(resultPendingIntent);
-        mNotificationBuilder.setSubText(getString(R.string.bms_notification_subcont_title)
-            + getString(R.string.bms_notification_subcont_none));
+        mNotificationBuilder.setSubText(getString(R.string.bms_notif_subcont_title)
+                + getString(R.string.bms_notif_subcont_none));
         startForeground(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
 
         IntentFilter filter = new IntentFilter();
@@ -94,18 +94,21 @@ public class BoardManagerService extends Service {
                 Log.e(LOG_TAG, "Failed open FT245 device.");
             }
         }
-        connectTheDevice();
+        connectDevice();
     }
 
-    public void connectTheDevice() {
+    public void connectDevice() {
         int openIndex = 0;
-        if (mDevCount > 0)
+        if (mDevCount > 0) {
+            Log.d(LOG_TAG, "There are openned devices");
             return;
-
+        }
         mDevCount = mFtdid2xx.createDeviceInfoList(this);
+
         if (mDevCount > 0) {
             mFtDev = mFtdid2xx.openByIndex(this, openIndex);
             if (mFtDev == null) {
+                Log.e(LOG_TAG, "Failed to open the device by index 0");
                 return;
             }
 
@@ -117,13 +120,13 @@ public class BoardManagerService extends Service {
                 mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
                 writeData(adf.geiInitianCommanSequence());
                 Log.d(LOG_TAG, "Device vas found and configured");
-                changeNotificationText( getString(R.string.bms_notification_content_title)
-                        + getString(R.string.bms_notification_content_connected));
+                changeNotificationText(getString(R.string.bms_notif_content_title)
+                        + getString(R.string.bms_notif_content_connected), getString(R.string.bms_notif_subcont_title));
             } else {
-                Log.e(LOG_TAG, "permission error");
+                Log.e(LOG_TAG, "Permission error");
             }
         } else {
-            Log.e(LOG_TAG, "Could not open the device");
+            Log.e(LOG_TAG, "Failed to create the device info list");
         }
     }
 
@@ -144,6 +147,7 @@ public class BoardManagerService extends Service {
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(LOG_TAG, "onStart method called");
+        connectDevice();
         return START_NOT_STICKY;
     }
 
@@ -181,7 +185,7 @@ public class BoardManagerService extends Service {
         }
     }
 
-    private synchronized void  writeData(byte[][] commands) {
+    private synchronized void writeData(byte[][] commands) {
         for (int i = 0; i < commands.length; i++) {
             int result = writeDataToRegister(commands[i]);
             Log.i(LOG_TAG, Integer.toString(result) + " bytes wrote to reg" + Integer.toString(i));
@@ -199,11 +203,17 @@ public class BoardManagerService extends Service {
     }
 
     /*public API classes*/
-    public void changeNotificationText(String text) {
-        Log.d(LOG_TAG, "method called. Text: " + text);
-        if (text == null) return;
-        mNotificationBuilder.setContentText(text);
-        mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+    public void changeNotificationText(String content, String subtext) {
+        Log.d(LOG_TAG, "method called. Text: " + content);
+        if (content != null) {
+            mNotificationBuilder.setContentText(content);
+            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
+
+        if (subtext != null) {
+            mNotificationBuilder.setSubText(subtext);
+            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
     }
 
     public void setFrequency(double frequency) {
@@ -218,30 +228,31 @@ public class BoardManagerService extends Service {
      *the changes in the Board service logic and enforces the control activity to change it
      *it state and visualize current situation.
      */
-    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver()
-    {
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent)
-        {
+        public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if(UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action))
-            {
-                Log.d(LOG_TAG,"Device detached!");
+            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                Log.d(LOG_TAG, "Device detached!");
                 /*TODO create
                  * 1)realization of operation control activity notification
                  * 2)realization of current operation state stop&save
                  */
                 mDeviceConnected = false;
-                changeNotificationText(getString(R.string.bms_notification_content_title)
-                        + getString(R.string.bms_notification_content_not_connected));
+                mDevCount = -1;
+                changeNotificationText(getString(R.string.bms_notif_content_title)
+                        + getString(R.string.bms_notif_content_not_connected), null);
 
             } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-                Log.d(LOG_TAG,"Device attached!");
+                Log.d(LOG_TAG, "Device attached!");
                 /*TODO create
                  * 1)realization of operation control activity notification
                  * 2)realization of current operation state stop&save
                  */
-                connectTheDevice();
+                changeNotificationText(getString(R.string.bms_notif_title)
+                        + getString(R.string.bms_notif_content_found),
+                        getString(R.string.bms_notif_subcont_plase_tap));
+
             }
         }
     };
