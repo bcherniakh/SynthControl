@@ -24,6 +24,8 @@ import com.ftdi.j2xx.FT_Device;
 import ua.pp.lab101.synthesizercontrol.MainActivity;
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.adregisters.ADBoardController;
+import ua.pp.lab101.synthesizercontrol.service.task.Task;
+import ua.pp.lab101.synthesizercontrol.service.task.TaskType;
 
 public class BoardManagerService extends Service {
     //IBinder realization that will be returned in binding process
@@ -31,7 +33,7 @@ public class BoardManagerService extends Service {
 
     private static final int ONGOING_NOTIFICATION_ID = 1488;
     private static final String LOG_TAG = "BoardService";
-    private ExecutorService es;
+    private ExecutorService taskExecutor;
 
     private NotificationManager mNotificationManager;
     private Notification.Builder mNotificationBuilder;
@@ -47,7 +49,7 @@ public class BoardManagerService extends Service {
     /*workflow variables*/
     private boolean mDeviceConnected;
     private double mCurrentFrequency;
-    CurrentStatus mServiceStatus;
+    private ServiceStatus mServiceStatus;
 
     public BoardManagerService() {
     }
@@ -55,11 +57,10 @@ public class BoardManagerService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(LOG_TAG, "onCreate method");
-        es = Executors.newFixedThreadPool(1);
+        taskExecutor = Executors.newFixedThreadPool(1);
 
         //getting an instance of Board controller
         adf = ADBoardController.getInstance();
-
 
         //if the service starts for the firs time it's status is idle.
         //Creating notification and declaring the service as foreground
@@ -75,10 +76,10 @@ public class BoardManagerService extends Service {
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT
         );
         mNotificationBuilder.setContentIntent(resultPendingIntent);
-        mNotificationBuilder.setSubText(getString(R.string.bms_notif_subcont_title)
-                + getString(R.string.bms_notif_subcont_none));
         startForeground(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
 
+        mNotificationBuilder.setSubText(getString(R.string.bms_notif_subcont_title)
+                + getString(R.string.bms_notif_subcont_none));
         IntentFilter filter = new IntentFilter();
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
@@ -95,14 +96,19 @@ public class BoardManagerService extends Service {
             }
         }
         connectDevice();
+
+        /*first run initialization*/
+        mCurrentFrequency = 0;
+        mServiceStatus = ServiceStatus.IDLE;
     }
 
-    public void connectDevice() {
+    private void connectDevice() {
         int openIndex = 0;
         if (mDevCount > 0) {
-            Log.d(LOG_TAG, "There are openned devices");
+            Log.d(LOG_TAG, "There are opened devices");
             return;
         }
+
         mDevCount = mFtdid2xx.createDeviceInfoList(this);
 
         if (mDevCount > 0) {
@@ -113,15 +119,12 @@ public class BoardManagerService extends Service {
             }
 
             if (mFtDev.isOpen()) {
-                mDeviceConnected = true;
-                mFtDev.resetDevice();
-                mFtDev.setBaudRate(9600);
-                mFtDev.setLatencyTimer((byte) 16);
-                mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
-                writeData(adf.geiInitianCommanSequence());
+                setupTheDevice();
                 Log.d(LOG_TAG, "Device vas found and configured");
                 changeNotificationText(getString(R.string.bms_notif_content_title)
-                        + getString(R.string.bms_notif_content_connected), getString(R.string.bms_notif_subcont_title));
+                        + getString(R.string.bms_notif_content_connected),
+                        getString(R.string.bms_notif_subcont_title));
+                mDeviceConnected = true;
             } else {
                 Log.e(LOG_TAG, "Permission error");
             }
@@ -130,8 +133,12 @@ public class BoardManagerService extends Service {
         }
     }
 
-    public void configureTheDevice() {
-
+    private void setupTheDevice() {
+        mFtDev.resetDevice();
+        mFtDev.setBaudRate(9600);
+        mFtDev.setLatencyTimer((byte) 16);
+        mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
+        writeData(adf.geiInitianCommanSequence());
     }
 
     public void onDestroy() {
@@ -155,14 +162,67 @@ public class BoardManagerService extends Service {
         return mLocalBinder;
     }
 
-    class ADFWriterRun implements Runnable {
-        double frequencyValue;
-        int startId;
+    private synchronized void writeData(byte[][] commands) {
+        for (int i = 0; i < commands.length; i++) {
+            int result = writeDataToRegister(commands[i]);
+            Log.i(LOG_TAG, Integer.toString(result) + " bytes wrote to reg" + Integer.toString(i));
+        }
+    }
+
+    private int writeDataToRegister(byte[] data) {
+        return mFtDev.write(data);
+    }
+
+    private void changeNotificationText(String content, String subtext) {
+        Log.d(LOG_TAG, "method called. Text: " + content);
+        if (content != null) {
+            mNotificationBuilder.setContentText(content);
+            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
+
+        if (subtext != null) {
+            mNotificationBuilder.setSubText(subtext);
+            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
+    }
+
+    /*public API classes*/
+    public void shutdownDevice(){
+        mServiceStatus = ServiceStatus.IDLE;
+        writeData(adf.turnOffTheDevice());
+    }
+
+    public boolean isDeviceConnected(){
+        return mDeviceConnected;
+    }
 
 
-        public ADFWriterRun(double frequencyValue) {
+    public void performTask(Task task) {
+        if (mDeviceConnected == false) return;
+        TaskType currentTaskType = task.getTaskType();
+        switch (currentTaskType) {
+            case CONSTANT_FREQUENCY_MODE:
+                performConstantModeTask(task.getConstantFrequency());
+                break;
+            case SCHEDULE_MODE:
+                break;
+            case FREQUENCY_SCAN_MODE:
+                break;
+        }
+    }
+
+    private void performConstantModeTask(double frequencyValue) {
+        mServiceStatus = ServiceStatus.CONSTANT_MODE;
+        writeData(adf.setFrequency(frequencyValue));
+        writeData(adf.turnOnDevice());
+    }
+
+    class TaskPerformer implements Runnable {
+        private double frequencyValue;
+        private int timeOfAction;
+
+        public TaskPerformer(double frequencyValue) {
             this.frequencyValue = frequencyValue;
-            this.startId = 0;
             Log.d(LOG_TAG, "Write run created");
         }
 
@@ -180,20 +240,10 @@ public class BoardManagerService extends Service {
         }
 
         void stop() {
-            Log.d(LOG_TAG, "service stops" + startId + " end, stopSelf(" + startId + ")");
+            Log.d(LOG_TAG, "service stops" );
+            writeData(adf.turnOffTheDevice());
             //stopSelf(startId);
         }
-    }
-
-    private synchronized void writeData(byte[][] commands) {
-        for (int i = 0; i < commands.length; i++) {
-            int result = writeDataToRegister(commands[i]);
-            Log.i(LOG_TAG, Integer.toString(result) + " bytes wrote to reg" + Integer.toString(i));
-        }
-    }
-
-    private int writeDataToRegister(byte[] data) {
-        return mFtDev.write(data);
     }
 
     public class BoardManagerBinder extends Binder {
@@ -202,26 +252,6 @@ public class BoardManagerService extends Service {
         }
     }
 
-    /*public API classes*/
-    public void changeNotificationText(String content, String subtext) {
-        Log.d(LOG_TAG, "method called. Text: " + content);
-        if (content != null) {
-            mNotificationBuilder.setContentText(content);
-            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
-        }
-
-        if (subtext != null) {
-            mNotificationBuilder.setSubText(subtext);
-            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
-        }
-    }
-
-    public void setFrequency(double frequency) {
-        if (frequency > 0) {
-            ADFWriterRun mr = new ADFWriterRun(frequency);
-            es.execute(mr);
-        }
-    }
 
     /*Lol shitcode style test programming YOBA*/
     /*this BroadcastReceiver receives state change of the device connection and manage all

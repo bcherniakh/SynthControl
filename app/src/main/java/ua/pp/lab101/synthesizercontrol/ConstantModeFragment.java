@@ -13,6 +13,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
+import ua.pp.lab101.synthesizercontrol.service.task.Task;
 
 /**
  * Fragment that presents Constant frequency operation mode.
@@ -30,11 +31,12 @@ public class ConstantModeFragment extends Fragment {
     private static final String LOG_TAG = "SControlConstant";
 
     /*View elements: */
-    private ToggleButton mToggleBtn = null;
+    private ToggleButton mPowerBtn = null;
     private EditText mFrequencyValue;
 
     public ConstantModeFragment() {
     }
+
     /*Fragment lifecycle methods */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,10 +51,10 @@ public class ConstantModeFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mToggleBtn = (ToggleButton) getActivity().findViewById(R.id.applyBtn);
+        mPowerBtn = (ToggleButton) getActivity().findViewById(R.id.powerBtn);
         mFrequencyValue = (EditText) getActivity().findViewById(R.id.frequencyValue);
-        if (mToggleBtn != null) {
-            mToggleBtn.setOnClickListener(new View.OnClickListener() {
+        if (mPowerBtn != null) {
+            mPowerBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     buttonSendPressed();
@@ -97,33 +99,45 @@ public class ConstantModeFragment extends Fragment {
     /*Main logic methods*/
     public void buttonSendPressed() {
 
-            if (mToggleBtn.isChecked()) {
-                double frequencyValue = 0;
-                try {
-                    frequencyValue = Double.parseDouble(mFrequencyValue.getText().toString());
-                } catch (Exception parseException) {
-                    Log.e(LOG_TAG, "Parse double error occurred");
-                    showToast(getString(R.string.const_msg_frequency_input_err));
-                    mToggleBtn.setChecked(false);
-                    return;
-                }
-
-                if ((frequencyValue < 35) || (frequencyValue > 4400)) {
-                    showToast(getString(R.string.const_msg_frequency_range_err));
-                    mToggleBtn.setChecked(false);
-                    return;
-                }
-                if (mService == null) {
-                    showToast("Fuck this shit");
-                    return;
-                }
-                Log.i(LOG_TAG, "Value to be set: " + Double.toString(frequencyValue) + " MHz");
-                mService.changeNotificationText(String.valueOf(frequencyValue), null);
-                mService.setFrequency(frequencyValue);
-            } else {
-                //stopping service
-                Log.i(LOG_TAG, "Button toggled off");
+        if (mPowerBtn.isChecked()) {
+            double frequencyValue = 0;
+            try {
+                frequencyValue = Double.parseDouble(mFrequencyValue.getText().toString());
+            } catch (Exception parseException) {
+                Log.e(LOG_TAG, "Parse double error occurred");
+                showToast(getString(R.string.const_msg_frequency_input_err));
+                mPowerBtn.setChecked(false);
+                return;
             }
+
+            if ((frequencyValue < 35) || (frequencyValue > 4400)) {
+                showToast(getString(R.string.const_msg_frequency_range_err));
+                mPowerBtn.setChecked(false);
+                return;
+            }
+
+            if (mService == null) {
+                showToast("Service is dead!");
+                mPowerBtn.setChecked(false);
+                return;
+            }
+
+            if (!mService.isDeviceConnected()) {
+                showToast(getString(R.string.const_msg_frequency_range_err));
+                mPowerBtn.setChecked(false);
+                return;
+            }
+
+            Log.i(LOG_TAG, "Value to be set: " + Double.toString(frequencyValue) + " MHz");
+            Task task = new Task(frequencyValue);
+            mService.performTask(task);
+            mFrequencyValue.setEnabled(false);
+        } else {
+            //stopping service
+            Log.i(LOG_TAG, "Button toggled off");
+            mFrequencyValue.setEnabled(true);
+            mService.shutdownDevice();
+        }
     }
 
     private void showToast(String textToShow) {

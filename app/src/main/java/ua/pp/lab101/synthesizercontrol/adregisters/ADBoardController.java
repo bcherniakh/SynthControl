@@ -113,6 +113,10 @@ public class ADBoardController {
                 ADRegisterController.REGISTER1, ADRegisterController.REGISTER0);
     }
 
+    /** method returns the command sequence for disabling the
+     * device saving current frequency settings
+     * @return command sequence of byte for all 6 registers
+     */
     public byte[][] turnOffTheDevice() {
         //Changing the state of register
         registerController.setPowerDown(PowerDown.ENABLED);

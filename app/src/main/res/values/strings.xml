@@ -12,6 +12,7 @@
     <string name="const_enter_data">Enter frequency value in MHz:</string>
     <string name="const_toggle_on">Turn ON</string>
     <string name="const_toggle_off">Turn OFF</string>
+    <string name="btn_apply_frequency">Apply</string>
     <string name="const_msg_connection_err">Could not find the device</string>
     <string name="const_msg_usb_permission_err">Could not find the device</string>
     <string name="const_msg_device_found">The device was found and initialized</string>
@@ -37,7 +38,7 @@
     <string name="title_activity_add_item_to_schedule">AddItemToScheduleActivity</string>
 
     <!--Add item to schedule activity resources-->
-    <string name="enter_frequency">Enter frequency in MHz:</string>
+    <string name="enter_frequency">Enter mConstantFrequency in MHz:</string>
     <string name="enter_time">Enter time in seconds:</string>
     <string name="apply_btn">Apply</string>
     <string name="frequency_incorrect">Enter value in range from 35 MHz to 4.4 GHz</string>
