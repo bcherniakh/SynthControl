@@ -8,4 +8,5 @@ public enum ServiceStatus {
     CONSTANT_MODE,
     SCHEDULE_MODE,
     SWIPE_MODE,
+    DEVICE_DISCONNECTED;
 }

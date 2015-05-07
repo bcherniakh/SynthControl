@@ -1,5 +1,6 @@
 package ua.pp.lab101.synthesizercontrol.service;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +47,9 @@ public class BoardManagerService extends Service {
     /**/
     private ADBoardController adf;
 
+    /*Service observers list that must be notified about change of state*/
+    ArrayList<IServiceObserver> mObservers = new ArrayList<IServiceObserver>();
+
     /*workflow variables*/
     private boolean mDeviceConnected;
     private double mCurrentFrequency;
@@ -66,20 +70,15 @@ public class BoardManagerService extends Service {
         //Creating notification and declaring the service as foreground
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotificationBuilder = new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(getString(R.string.bms_notif_title))
-                .setContentText(getString(R.string.bms_notif_content_title)
-                        + getString(R.string.bms_notif_content_not_connected));
-        Intent resultIntent = new Intent(this, MainActivity.class);
+                .setContentTitle(getString(R.string.bms_notif_title));
+        Intent tapResultIntent = new Intent(this, MainActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(MainActivity.class);
-        stackBuilder.addNextIntent(resultIntent);
+        stackBuilder.addNextIntent(tapResultIntent);
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT
         );
         mNotificationBuilder.setContentIntent(resultPendingIntent);
         startForeground(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
-
-        mNotificationBuilder.setSubText(getString(R.string.bms_notif_subcont_title)
-                + getString(R.string.bms_notif_subcont_none));
         IntentFilter filter = new IntentFilter();
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
@@ -99,7 +98,7 @@ public class BoardManagerService extends Service {
 
         /*first run initialization*/
         mCurrentFrequency = 0;
-        mServiceStatus = ServiceStatus.IDLE;
+        changeServiceStatus(ServiceStatus.IDLE);
     }
 
     private void connectDevice() {
@@ -121,9 +120,6 @@ public class BoardManagerService extends Service {
             if (mFtDev.isOpen()) {
                 setupTheDevice();
                 Log.d(LOG_TAG, "Device vas found and configured");
-                changeNotificationText(getString(R.string.bms_notif_content_title)
-                        + getString(R.string.bms_notif_content_connected),
-                        getString(R.string.bms_notif_subcont_title));
                 mDeviceConnected = true;
             } else {
                 Log.e(LOG_TAG, "Permission error");
@@ -154,7 +150,10 @@ public class BoardManagerService extends Service {
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(LOG_TAG, "onStart method called");
-        connectDevice();
+        if (!mDeviceConnected) {
+            connectDevice();
+            changeServiceStatus(ServiceStatus.IDLE);
+        }
         return START_NOT_STICKY;
     }
 
@@ -173,26 +172,14 @@ public class BoardManagerService extends Service {
         return mFtDev.write(data);
     }
 
-    private void changeNotificationText(String content, String subtext) {
-        Log.d(LOG_TAG, "method called. Text: " + content);
-        if (content != null) {
-            mNotificationBuilder.setContentText(content);
-            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
-        }
-
-        if (subtext != null) {
-            mNotificationBuilder.setSubText(subtext);
-            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
-        }
-    }
 
     /*public API classes*/
-    public void shutdownDevice(){
-        mServiceStatus = ServiceStatus.IDLE;
+    public void shutdownDevice() {
+        changeServiceStatus(ServiceStatus.IDLE);
         writeData(adf.turnOffTheDevice());
     }
 
-    public boolean isDeviceConnected(){
+    public boolean isDeviceConnected() {
         return mDeviceConnected;
     }
 
@@ -211,10 +198,29 @@ public class BoardManagerService extends Service {
         }
     }
 
+    public void registerObserver(IServiceObserver observer) {
+        mObservers.add(observer);
+    }
+
+    public ServiceStatus getCurrentStatus() {
+        return mServiceStatus;
+    }
+
+    public double getCurrentFrequency() {
+        return mCurrentFrequency;
+    }
+    /* TODO need to finish the realization of this method */
+    private void updateObservers(){
+        for (IServiceObserver observer : mObservers) {
+            observer.update();
+        }
+    }
+
     private void performConstantModeTask(double frequencyValue) {
-        mServiceStatus = ServiceStatus.CONSTANT_MODE;
+        mCurrentFrequency = frequencyValue;
         writeData(adf.setFrequency(frequencyValue));
         writeData(adf.turnOnDevice());
+        changeServiceStatus(ServiceStatus.CONSTANT_MODE);
     }
 
     class TaskPerformer implements Runnable {
@@ -240,11 +246,81 @@ public class BoardManagerService extends Service {
         }
 
         void stop() {
-            Log.d(LOG_TAG, "service stops" );
+            Log.d(LOG_TAG, "service stops");
             writeData(adf.turnOffTheDevice());
             //stopSelf(startId);
         }
     }
+
+    private void changeServiceStatus(ServiceStatus newStatus) {
+        String serviceStatusContent = "";
+        String serviceStatusSubtext = "";
+        switch (newStatus) {
+            case IDLE:
+                mServiceStatus = newStatus;
+                serviceStatusContent = (mDeviceConnected) ? getString(R.string.bms_notif_content_status_idle)
+                        : getString(R.string.bms_notif_content_status_disconnected);
+                serviceStatusSubtext = "0";
+                changeNotificationAll(serviceStatusContent, serviceStatusSubtext);
+                break;
+            case CONSTANT_MODE:
+                mServiceStatus = newStatus;
+                serviceStatusContent = getString(R.string.bms_notif_content_status_constant);
+                serviceStatusSubtext = String.valueOf(mCurrentFrequency);
+                changeNotificationAll(serviceStatusContent, serviceStatusSubtext);
+                break;
+            case SCHEDULE_MODE:
+                break;
+            case SWIPE_MODE:
+                break;
+            case DEVICE_DISCONNECTED:
+                mServiceStatus = newStatus;
+                mDeviceConnected = false;
+                mDevCount = -1;
+                serviceStatusContent = getString(R.string.bms_notif_content_status_disconnected);
+                changeNotificationAll(serviceStatusContent, "0");
+                break;
+        }
+
+    }
+
+    private void changeNotificationAll(String content, String subtext) {
+        Log.d(LOG_TAG, "method called. Text: " + content);
+        if (content != null) {
+            String information = getString(R.string.bms_notif_content_title) + " "
+                    + content;
+            mNotificationBuilder.setContentText(information);
+            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
+
+        if (subtext != null) {
+            String information = getString(R.string.bms_notif_subcont_title) + " "
+                    + subtext;
+            mNotificationBuilder.setSubText(information);
+            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
+    }
+
+    private void changeNotificationContent(String content) {
+        Log.d(LOG_TAG, "method called. Text: " + content);
+        if (content != null) {
+            String information = getString(R.string.bms_notif_content_title) + " "
+                    + content;
+            mNotificationBuilder.setContentText(information);
+            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
+    }
+
+    private void changeNotificationSubtext(String subtext) {
+        Log.d(LOG_TAG, "method called. Text: " + subtext);
+        if (subtext != null) {
+            String information = getString(R.string.bms_notif_content_title) + " "
+                    + subtext;
+            mNotificationBuilder.setSubText(information);
+            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
+    }
+
 
     public class BoardManagerBinder extends Binder {
         public BoardManagerService getService() {
@@ -268,21 +344,16 @@ public class BoardManagerService extends Service {
                  * 1)realization of operation control activity notification
                  * 2)realization of current operation state stop&save
                  */
-                mDeviceConnected = false;
-                mDevCount = -1;
-                changeNotificationText(getString(R.string.bms_notif_content_title)
-                        + getString(R.string.bms_notif_content_not_connected), null);
-
+                changeServiceStatus(ServiceStatus.DEVICE_DISCONNECTED);
+                updateObservers();
             } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
                 Log.d(LOG_TAG, "Device attached!");
                 /*TODO create
                  * 1)realization of operation control activity notification
                  * 2)realization of current operation state stop&save
                  */
-                changeNotificationText(getString(R.string.bms_notif_title)
-                        + getString(R.string.bms_notif_content_found),
+                changeNotificationAll(getString(R.string.bms_notif_content_staus_found),
                         getString(R.string.bms_notif_subcont_plase_tap));
-
             }
         }
     };

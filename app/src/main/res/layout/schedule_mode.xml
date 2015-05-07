@@ -15,19 +15,28 @@
         android:layout_height="140dp"
         android:id="@+id/scheduleList"
         android:layout_gravity="center_horizontal|top"
-        android:layout_below="@+id/addItemBtn"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignBottom="@+id/textView" />
+        android:layout_below="@+id/startProgramBtn"
+        android:layout_above="@+id/addItemBtn" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/add_item_btn"
+        android:text="@string/scheduler_add_item_btn"
         android:id="@+id/addItemBtn"
-        android:layout_alignParentTop="true"
+        android:nestedScrollingEnabled="false"
+        android:layout_alignBottom="@+id/textView"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:nestedScrollingEnabled="false" />
+        android:layout_alignParentEnd="true" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/scheduler_btn_start"
+        android:id="@+id/startProgramBtn"
+        android:layout_alignTop="@+id/textView"
+        android:layout_alignLeft="@+id/addItemBtn"
+        android:layout_alignStart="@+id/addItemBtn" />
 
 </RelativeLayout>

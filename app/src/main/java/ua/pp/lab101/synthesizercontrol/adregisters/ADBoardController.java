@@ -107,7 +107,7 @@ public class ADBoardController {
      * @return array of byte.
      */
     public byte[][] geiInitianCommanSequence(){
-        //loadDefaults();
+        loadDefaults();
         return getCommandSequence(ADRegisterController.REGISTER5, ADRegisterController.REGISTER4,
                 ADRegisterController.REGISTER3, ADRegisterController.REGISTER2,
                 ADRegisterController.REGISTER1, ADRegisterController.REGISTER0);

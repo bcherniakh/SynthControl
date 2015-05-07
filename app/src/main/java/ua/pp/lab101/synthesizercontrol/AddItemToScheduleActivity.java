@@ -3,6 +3,7 @@ package ua.pp.lab101.synthesizercontrol;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,20 +12,29 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.ParseException;
+
+import ua.pp.lab101.synthesizercontrol.adregisters.adparameters.DoubleBuffer;
+
 public class AddItemToScheduleActivity extends ActionBarActivity implements View.OnClickListener{
-    private Button applyBtn = null;
-    private EditText frequencyValue = null;
-    private EditText timeValue = null;
+    private static final String LOG_TAG = "AddItem";
+    private Button mApplyBtn = null;
+    private EditText mFrequencyValueET = null;
+    private EditText mTimeValueET = null;
+    private double mFerquencyValue = 0;
+    private int mTimeValue = 0;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_item_to_schedule);
-        applyBtn = (Button) findViewById(R.id.applyBtn);
-        frequencyValue = (EditText) findViewById(R.id.frequencyValue);
-        timeValue = (EditText) findViewById(R.id.timeValue);
-        applyBtn.setOnClickListener(this);
+        mApplyBtn = (Button) findViewById(R.id.applyBtn);
+        mFrequencyValueET = (EditText) findViewById(R.id.frequencyValue);
+        mTimeValueET = (EditText) findViewById(R.id.timeValue);
+        mApplyBtn.setOnClickListener(this);
     }
 
 
@@ -53,29 +63,37 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
     @Override
     public void onClick(View v) {
         Intent intent = new Intent();
-        String frequencyValueText = frequencyValue.getText().toString();
-        String  timeValueText =  timeValue.getText().toString();
+        String frequencyValueText = mFrequencyValueET.getText().toString();
+        String  timeValueText =  mTimeValueET.getText().toString();
+        try {
+            mFerquencyValue = Double.parseDouble(frequencyValueText);
+            mTimeValue = Integer.parseInt(timeValueText);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "Parse exception occurred");
+        }
 
-        if (Double.parseDouble(frequencyValueText) < 35 || Double.parseDouble(frequencyValueText) > 4400) {
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    getResources().getString(R.string.frequency_incorrect),
-                    Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
+        if (mFerquencyValue < 35 || mFerquencyValue > 4400) {
+            showToast(getString(R.string.frequency_incorrect));
             return;
         }
 
-        if (Integer.parseInt(timeValueText) < 0 || Integer.parseInt(timeValueText) > 18000) {
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    getResources().getString(R.string.time_incorrect),
-                    Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
+        if (mTimeValue <= 0 || mTimeValue > 18000) {
+            showToast(getString(R.string.time_incorrect));
             return;
         }
+
+        double newDouble = new BigDecimal(mFerquencyValue).setScale(3, RoundingMode.UP).doubleValue();
+        frequencyValueText = String.valueOf(newDouble);
         intent.putExtra("frequency", frequencyValueText );
         intent.putExtra("time", timeValueText);
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    private void showToast(String text) {
+        Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
     }
 }

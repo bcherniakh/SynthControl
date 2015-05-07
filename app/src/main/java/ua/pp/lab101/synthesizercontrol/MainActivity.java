@@ -14,9 +14,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
+import ua.pp.lab101.synthesizercontrol.service.IServiceObserver;
+import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
 
 public class MainActivity extends ActionBarActivity
-        implements OperationModeFragment.OperationModeListener, IMainConstants, IServiceDistributor {
+        implements OperationModeFragment.OperationModeListener, IServiceDistributor,
+        IServiceObserver{
     /*Service members*/
     private BoardManagerService mService;
     private BoardManagerService.BoardManagerBinder mBinder;
@@ -30,7 +33,7 @@ public class MainActivity extends ActionBarActivity
     private ConstantModeFragment mConstantModeFragment = null;
     private SchedulerModeFragment mSchedulerModeFragment = new SchedulerModeFragment();
 
-    private static final String LOG_TAG = "SynthControlMain";
+    private static final String LOG_TAG = "SControlMain";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,8 +123,21 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onModeSelected(int currentIndex) {
+        if (!mBound) {
+            /*TODO need to implemet explanation for user*/
+            return;
+        }
         FragmentTransaction fragmentTransaction = mFragmentManager
                 .beginTransaction();
+
+//        if (!mService.isDeviceConnected()) {
+//            /*TODO implement explanation for user */
+//            if (currentIndex == -1) {
+//                fragmentTransaction.replace(R.id.fragment_container, mOperationModeFragment);
+//            }
+//            return;
+//        }
+
         if (currentIndex == 0) {
             fragmentTransaction.replace(R.id.fragment_container, mConstantModeFragment);
         } else if (currentIndex == 1) {
@@ -155,6 +171,16 @@ public class MainActivity extends ActionBarActivity
             mBinder = (BoardManagerService.BoardManagerBinder) service;
             mService = mBinder.getService();
             mBound = true;
+            mService.registerObserver((IServiceObserver)MainActivity.this);
+            ServiceStatus currentStatus = mService.getCurrentStatus();
+            switch (currentStatus) {
+                case CONSTANT_MODE:
+                    onModeSelected(0);
+                    break;
+                case SCHEDULE_MODE:
+                    onModeSelected(1);
+                    break;
+            }
         }
 
         @Override
@@ -166,5 +192,10 @@ public class MainActivity extends ActionBarActivity
     @Override
     public BoardManagerService getService() {
         return mService;
+    }
+
+    @Override
+    public void update() {
+        onModeSelected(-1);
     }
 }

@@ -13,22 +13,24 @@
     <string name="const_toggle_on">Turn ON</string>
     <string name="const_toggle_off">Turn OFF</string>
     <string name="btn_apply_frequency">Apply</string>
-    <string name="const_msg_connection_err">Could not find the device</string>
-    <string name="const_msg_usb_permission_err">Could not find the device</string>
     <string name="const_msg_device_found">The device was found and initialized</string>
     <string name="const_msg_frequency_input_err">Frequency input error</string>
     <string name="const_msg_frequency_range_err">Frequency value must be in range 35 MHz - 4.4 GHz</string>
     <string name="const_msg_device_disconnected">Device has been disconnected</string>
+    <string name="const_msg_no_device">No device present!</string>
 
 
 
     <!--Scheduler fragment resources-->
     <string name="scheduler_mode_title">Scheduler</string>
-    <string name="add_item_btn">Add entry</string>
-    <string name="delete_item_menu_entry">Delete item</string>
-    <string name="main_title">Enter value in Mhz:</string>
+    <string name="scheduler_add_item_btn">Add entry</string>
+    <string name="scheduler_delete_item_menu_entry">Delete item</string>
+    <string name="scheduler_main_title">Enter value in Mhz:</string>
     <string name="action_stop_service">Stop service</string>
-    <string name="button_title">PUSH ME</string>
+    <string name="scheduler_btn_start">PUSH ME</string>
+    <string name="scheduler_list_header_title">Header</string>
+    <string name="schedule_list_header_frequency">Frequency (Mhz)</string>
+    <string name="schedule_list_header_time">Time (seconds)</string>
 
     <string-array name="OperationModes">
         <item>Constant value mode</item>
@@ -46,11 +48,18 @@
 
     <!--BoardManagerService service resourses-->
     <string name="bms_notif_title">Board manager</string>
-    <string name="bms_notif_content_not_connected">Device not connected</string>
-    <string name="bms_notif_content_connected">device connected</string>
+
     <string name="bms_notif_content_title">Current status: </string>
+    <string name="bms_notif_content_status_disconnected">device is disconnected</string>
+    <string name="bms_notif_content_connected">device connected</string>
+    <string name="bms_notif_content_staus_found">Device found</string>
+    <string name="bms_notif_content_status_idle">idle</string>
+    <string name="bms_notif_content_status_constant">constant mode</string>
+    <string name="bms_notif_content_status_schedule">schedule mode</string>
+    <string name="bms_notif_content_status_freqscan">frequency scan</string>
+
     <string name="bms_notif_subcont_title">Frequency: </string>
     <string name="bms_notif_subcont_none">none</string>
-    <string name="bms_notif_content_found">Device found</string>
-    <string name="bms_notif_subcont_plase_tap">Please, tap to connect!</string>
+    <string name="bms_notif_subcont_plase_tap">Please, give a proper permission than tap to connect!</string>
+
 </resources>

@@ -13,6 +13,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
+import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
 import ua.pp.lab101.synthesizercontrol.service.task.Task;
 
 /**
@@ -22,8 +23,6 @@ import ua.pp.lab101.synthesizercontrol.service.task.Task;
  */
 public class ConstantModeFragment extends Fragment {
 
-    /*Service members*/
-    private IServiceDistributor mServiceDistributor;
     private BoardManagerService mService;
     private boolean mBound;
 
@@ -38,6 +37,20 @@ public class ConstantModeFragment extends Fragment {
     }
 
     /*Fragment lifecycle methods */
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            IServiceDistributor serviceDistributor = (IServiceDistributor) activity;
+            mService = serviceDistributor.getService();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + "must implement OnFragmentInteractionListener");
+        }
+        setRetainInstance(true);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -61,6 +74,17 @@ public class ConstantModeFragment extends Fragment {
                 }
             });
         }
+        ServiceStatus currentStatus = mService.getCurrentStatus();
+        if (currentStatus.equals(ServiceStatus.CONSTANT_MODE)) {
+            mFrequencyValue.setText(String.valueOf(mService.getCurrentFrequency()));
+            mFrequencyValue.setEnabled(false);
+            mPowerBtn.setChecked(true);
+        } else {
+            mService.shutdownDevice();
+            mFrequencyValue.setText(String.valueOf(0.0));
+            mFrequencyValue.setEnabled(true);
+            mPowerBtn.setChecked(false);
+        }
     }
 
     @Override
@@ -69,31 +93,28 @@ public class ConstantModeFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mServiceDistributor = (IServiceDistributor) activity;
-            mService = mServiceDistributor.getService();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-        setRetainInstance(true);
-    }
-
-    @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     /*Main logic methods*/
@@ -123,7 +144,7 @@ public class ConstantModeFragment extends Fragment {
             }
 
             if (!mService.isDeviceConnected()) {
-                showToast(getString(R.string.const_msg_frequency_range_err));
+                showToast(getString(R.string.const_msg_no_device));
                 mPowerBtn.setChecked(false);
                 return;
             }
