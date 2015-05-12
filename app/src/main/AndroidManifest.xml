@@ -10,11 +10,11 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="@string/main_app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:name=".activity.main.MainActivity"
+            android:label="@string/main_app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,8 +30,8 @@
             -->
         </activity>
         <activity
-            android:name=".AddItemToScheduleActivity"
-            android:label="@string/title_activity_add_item_to_schedule" >
+            android:name=".activity.additem.AddItemToScheduleActivity"
+            android:label="@string/additem_title_activity" >
         </activity>
 
         <service

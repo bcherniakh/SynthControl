@@ -11,6 +11,7 @@
         android:text="New Text"
         android:id="@+id/scheduleFrequencyText"
         android:layout_weight="1"
+        android:layout_gravity="left"
         android:gravity="top|center" />
 
     <TextView

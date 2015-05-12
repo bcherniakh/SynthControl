@@ -1,4 +1,4 @@
-package ua.pp.lab101.synthesizercontrol;
+package ua.pp.lab101.synthesizercontrol.activity.main.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -12,6 +12,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import ua.pp.lab101.synthesizercontrol.R;
+import ua.pp.lab101.synthesizercontrol.activity.main.IServiceDistributor;
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
 import ua.pp.lab101.synthesizercontrol.service.task.Task;

@@ -22,7 +22,7 @@ import android.util.Log;
 import com.ftdi.j2xx.D2xxManager;
 import com.ftdi.j2xx.FT_Device;
 
-import ua.pp.lab101.synthesizercontrol.MainActivity;
+import ua.pp.lab101.synthesizercontrol.activity.main.MainActivity;
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.adregisters.ADBoardController;
 import ua.pp.lab101.synthesizercontrol.service.task.Task;
@@ -175,8 +175,10 @@ public class BoardManagerService extends Service {
 
     /*public API classes*/
     public void shutdownDevice() {
-        changeServiceStatus(ServiceStatus.IDLE);
-        writeData(adf.turnOffTheDevice());
+        if (mDeviceConnected) {
+            changeServiceStatus(ServiceStatus.IDLE);
+            writeData(adf.turnOffTheDevice());
+        }
     }
 
     public boolean isDeviceConnected() {

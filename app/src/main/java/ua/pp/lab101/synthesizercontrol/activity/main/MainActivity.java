@@ -1,4 +1,4 @@
-package ua.pp.lab101.synthesizercontrol;
+package ua.pp.lab101.synthesizercontrol.activity.main;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,6 +13,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import ua.pp.lab101.synthesizercontrol.R;
+import ua.pp.lab101.synthesizercontrol.activity.main.fragments.ConstantModeFragment;
+import ua.pp.lab101.synthesizercontrol.activity.main.fragments.OperationModeFragment;
+import ua.pp.lab101.synthesizercontrol.activity.main.fragments.SchedulerModeFragment;
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 import ua.pp.lab101.synthesizercontrol.service.IServiceObserver;
 import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
@@ -41,7 +45,7 @@ public class MainActivity extends ActionBarActivity
         Log.d(LOG_TAG, "onCreate");
 
         setContentView(R.layout.activity_main);
-        ModesTitleArray = getResources().getStringArray(R.array.OperationModes);
+        ModesTitleArray = getResources().getStringArray(R.array.operation_modes);
 
         mConstantModeFragment = new ConstantModeFragment();
         mFragmentManager = getFragmentManager();

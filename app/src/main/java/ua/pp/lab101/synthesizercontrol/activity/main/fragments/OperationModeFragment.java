@@ -1,4 +1,4 @@
-package ua.pp.lab101.synthesizercontrol;
+package ua.pp.lab101.synthesizercontrol.activity.main.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -6,6 +6,9 @@ import android.app.ListFragment;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
+
+import ua.pp.lab101.synthesizercontrol.R;
+import ua.pp.lab101.synthesizercontrol.activity.main.MainActivity;
 
 /**
  * A fragment representing a list of Items.

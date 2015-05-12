@@ -1,18 +1,18 @@
 <resources>
 
     <!--String resources in general -->
-    <string name="app_name">SynthControl</string>
+    <string name="main_app_name">SynthControl</string>
 
     <!--Fragment titles-->
-    <string name="constant_title">Constant mode</string>
-    <string name="scheduler_mode">Scheduler mode</string>
+    <string name="main_constant_title">Constant mode</string>
+    <string name="main_scheduler_title">Scheduler mode</string>
 
     <!--Constant fragment resources-->
     <string name="const_fragment_title">Constant mode</string>
     <string name="const_enter_data">Enter frequency value in MHz:</string>
     <string name="const_toggle_on">Turn ON</string>
     <string name="const_toggle_off">Turn OFF</string>
-    <string name="btn_apply_frequency">Apply</string>
+    <string name="const_btn_apply_frequency">Apply</string>
     <string name="const_msg_device_found">The device was found and initialized</string>
     <string name="const_msg_frequency_input_err">Frequency input error</string>
     <string name="const_msg_frequency_range_err">Frequency value must be in range 35 MHz - 4.4 GHz</string>
@@ -23,28 +23,30 @@
 
     <!--Scheduler fragment resources-->
     <string name="scheduler_mode_title">Scheduler</string>
-    <string name="scheduler_add_item_btn">Add entry</string>
-    <string name="scheduler_delete_item_menu_entry">Delete item</string>
-    <string name="scheduler_main_title">Enter value in Mhz:</string>
+    <string name="scheduler_btn_add_item">Add entry</string>
+    <string name="scheduler_menu_entry_delete_item">Delete entry</string>
+    <string name="scheduler_menu_entry_edit_item">Edit entry</string>
     <string name="action_stop_service">Stop service</string>
     <string name="scheduler_btn_start">PUSH ME</string>
-    <string name="scheduler_list_header_title">Header</string>
     <string name="schedule_list_header_frequency">Frequency (Mhz)</string>
     <string name="schedule_list_header_time">Time (seconds)</string>
 
-    <string-array name="OperationModes">
+    <string-array name="operation_modes">
         <item>Constant value mode</item>
         <item>Scheduler mode</item>
     </string-array>
 
-    <string name="title_activity_add_item_to_schedule">AddItemToScheduleActivity</string>
-
     <!--Add item to schedule activity resources-->
-    <string name="enter_frequency">Enter mConstantFrequency in MHz:</string>
-    <string name="enter_time">Enter time in seconds:</string>
-    <string name="apply_btn">Apply</string>
-    <string name="frequency_incorrect">Enter value in range from 35 MHz to 4.4 GHz</string>
-    <string name="time_incorrect">Time is incorrect. Please enter correct value.</string>
+    <string name="additem_title_activity">Edit entry</string>
+    <string name="additem_title_enter_frequency">Enter Frequency in MHz:</string>
+    <string name="additem_title_enter_time">Enter time of operating:</string>
+    <string name="additem_tile_hours">hours:</string>
+    <string name="additem_title_minutes">minutes:</string>
+    <string name="additem_title_seconds">seconds:</string>
+    <string name="additem_btn_apply">Apply</string>
+    <string name="additem_msg_frequency_incorrect">Enter value in range from 35 MHz to 4.4 GHz</string>
+    <string name="additem_msg_time_incorrect">Time is incorrect. Please enter correct value.</string>
+    <string name="additem_msg_parse_error">Some fields are filled incorrect. Check and try again.</string>
 
     <!--BoardManagerService service resourses-->
     <string name="bms_notif_title">Board manager</string>
@@ -57,7 +59,6 @@
     <string name="bms_notif_content_status_constant">constant mode</string>
     <string name="bms_notif_content_status_schedule">schedule mode</string>
     <string name="bms_notif_content_status_freqscan">frequency scan</string>
-
     <string name="bms_notif_subcont_title">Frequency: </string>
     <string name="bms_notif_subcont_none">none</string>
     <string name="bms_notif_subcont_plase_tap">Please, give a proper permission than tap to connect!</string>

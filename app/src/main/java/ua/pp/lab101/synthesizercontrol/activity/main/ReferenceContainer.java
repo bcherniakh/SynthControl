@@ -1,4 +1,4 @@
-package ua.pp.lab101.synthesizercontrol;
+package ua.pp.lab101.synthesizercontrol.activity.main;
 
 import java.io.Serializable;
 
