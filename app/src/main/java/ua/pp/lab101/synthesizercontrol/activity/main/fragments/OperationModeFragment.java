@@ -33,7 +33,7 @@ public class OperationModeFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setListAdapter(new ArrayAdapter<String>(getActivity(),
-                R.layout.list_modes, MainActivity.ModesTitleArray));
+                R.layout.list_main_modes, MainActivity.ModesTitleArray));
         // If a title has already been selected in the past, reset the selection state now
 //        if (currentIndex != MainActivity.UNSELECTED) {
 //            setSelection(currentIndex);

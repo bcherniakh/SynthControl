@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "ua.pp.lab101.synthcontrol"
-        minSdkVersion 16
-        targetSdkVersion 21
+        minSdkVersion 15
+        targetSdkVersion 19
         versionCode 1
-        versionName "1.0"
+        versionName "0.9.1a"
     }
     buildTypes {
         release {
@@ -26,4 +26,5 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:22.0.0'
+    compile files('libs/opencsv-3.4.jar')
 }

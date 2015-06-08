@@ -34,7 +34,7 @@ public class MainActivity extends ActionBarActivity
 
     private FragmentManager mFragmentManager;
     private final OperationModeFragment mOperationModeFragment = new OperationModeFragment();
-    private ConstantModeFragment mConstantModeFragment = null;
+    private ConstantModeFragment mConstantModeFragment = new ConstantModeFragment();
     private SchedulerModeFragment mSchedulerModeFragment = new SchedulerModeFragment();
 
     private static final String LOG_TAG = "SControlMain";
@@ -46,14 +46,21 @@ public class MainActivity extends ActionBarActivity
 
         setContentView(R.layout.activity_main);
         ModesTitleArray = getResources().getStringArray(R.array.operation_modes);
-
-        mConstantModeFragment = new ConstantModeFragment();
         mFragmentManager = getFragmentManager();
         if (savedInstanceState == null) {
             Log.d(LOG_TAG, "Rebuilding fragments");
             FragmentTransaction fragmentTransaction = mFragmentManager
                     .beginTransaction();
             fragmentTransaction.add(R.id.fragment_container, mOperationModeFragment);
+            fragmentTransaction.commit();
+            mFragmentManager.executePendingTransactions();
+        }
+
+        //Strange spike for android 4.0.3
+        if (savedInstanceState != null && mService == null) {
+            FragmentTransaction fragmentTransaction = mFragmentManager
+                    .beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, mOperationModeFragment);
             fragmentTransaction.commit();
             mFragmentManager.executePendingTransactions();
         }
@@ -134,13 +141,12 @@ public class MainActivity extends ActionBarActivity
         FragmentTransaction fragmentTransaction = mFragmentManager
                 .beginTransaction();
 
-//        if (!mService.isDeviceConnected()) {
-//            /*TODO implement explanation for user */
-//            if (currentIndex == -1) {
-//                fragmentTransaction.replace(R.id.fragment_container, mOperationModeFragment);
-//            }
-//            return;
-//        }
+        if (!mService.isDeviceConnected()) {
+            /*TODO implement explanation for user */
+            if (currentIndex == -1) {
+                fragmentTransaction.replace(R.id.fragment_container, mOperationModeFragment);
+            }
+        }
 
         if (currentIndex == 0) {
             fragmentTransaction.replace(R.id.fragment_container, mConstantModeFragment);

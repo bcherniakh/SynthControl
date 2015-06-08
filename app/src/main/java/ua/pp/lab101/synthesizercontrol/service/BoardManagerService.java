@@ -5,11 +5,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import android.app.Notification;
 import android.app.NotificationManager;
+//import android.support.v4.app.NotificationManagerCompat;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.app.TaskStackBuilder;
+//import android.app.TaskStackBuilder;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,9 +24,16 @@ import android.util.Log;
 import com.ftdi.j2xx.D2xxManager;
 import com.ftdi.j2xx.FT_Device;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import ua.pp.lab101.synthesizercontrol.activity.main.MainActivity;
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.adregisters.ADBoardController;
+import ua.pp.lab101.synthesizercontrol.service.network.NetworkNotifier;
 import ua.pp.lab101.synthesizercontrol.service.task.Task;
 import ua.pp.lab101.synthesizercontrol.service.task.TaskType;
 
@@ -37,7 +46,7 @@ public class BoardManagerService extends Service {
     private ExecutorService taskExecutor;
 
     private NotificationManager mNotificationManager;
-    private Notification.Builder mNotificationBuilder;
+    private NotificationCompat.Builder mNotificationBuilder;
 
     /*System elements. Context and usbdevice*/
     private D2xxManager mFtdid2xx = null;
@@ -55,6 +64,9 @@ public class BoardManagerService extends Service {
     private double mCurrentFrequency;
     private ServiceStatus mServiceStatus;
 
+    /*backend notifier*/
+    NetworkNotifier mNetworkNotifier = null;
+
     public BoardManagerService() {
     }
 
@@ -69,7 +81,7 @@ public class BoardManagerService extends Service {
         //if the service starts for the firs time it's status is idle.
         //Creating notification and declaring the service as foreground
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotificationBuilder = new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
+        mNotificationBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(getString(R.string.bms_notif_title));
         Intent tapResultIntent = new Intent(this, MainActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -99,6 +111,20 @@ public class BoardManagerService extends Service {
         /*first run initialization*/
         mCurrentFrequency = 0;
         changeServiceStatus(ServiceStatus.IDLE);
+
+        /*Network notifier initialization*/
+
+        initialyezeNotifier();
+    }
+
+    private void initialyezeNotifier() {
+        String URL = "nimbits.ashram.me:8080";
+        String email = "immlf@mail.ru";
+        String token = "verystrongtoken";
+        String recourseID = "UsedFrequency";
+
+        mNetworkNotifier = new NetworkNotifier(URL, email, token, recourseID);
+
     }
 
     private void connectDevice() {
@@ -178,6 +204,8 @@ public class BoardManagerService extends Service {
         if (mDeviceConnected) {
             changeServiceStatus(ServiceStatus.IDLE);
             writeData(adf.turnOffTheDevice());
+            String nimbitsNote = "Device shut down";
+            mNetworkNotifier.notifyServer(0, nimbitsNote);
         }
     }
 
@@ -223,6 +251,13 @@ public class BoardManagerService extends Service {
         writeData(adf.setFrequency(frequencyValue));
         writeData(adf.turnOnDevice());
         changeServiceStatus(ServiceStatus.CONSTANT_MODE);
+        String nimbitsNote = "Constant mode";
+        int resultCode = mNetworkNotifier.notifyServer(frequencyValue, nimbitsNote);
+        if (resultCode ==200) {
+            Log.d(LOG_TAG, "Data successfully sent");
+        } else {
+            Log.d(LOG_TAG, "Data sending failed. Code: " + resultCode);
+        }
     }
 
     class TaskPerformer implements Runnable {
@@ -329,6 +364,7 @@ public class BoardManagerService extends Service {
             return BoardManagerService.this;
         }
     }
+
 
 
     /*Lol shitcode style test programming YOBA*/

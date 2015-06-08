@@ -58,7 +58,7 @@ public class ConstantModeFragment extends Fragment {
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.constant_mode, container, false);
+        View view = inflater.inflate(R.layout.activity_constant_mode, container, false);
         return view;
 
     }

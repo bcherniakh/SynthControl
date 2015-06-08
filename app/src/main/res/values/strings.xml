@@ -30,6 +30,10 @@
     <string name="scheduler_btn_start">PUSH ME</string>
     <string name="schedule_list_header_frequency">Frequency (Mhz)</string>
     <string name="schedule_list_header_time">Time (seconds)</string>
+    <string name="scheduler_btn_read_file">Read</string>
+    <string name="scheduler_btn_write_file">Write</string>
+    <string name="scheduler_btn_hint_read_file">Press to read list from file</string>
+    <string name="scheduler_toast_err_schedule_empty">Schedule is empty. nothing to write.</string>
 
     <string-array name="operation_modes">
         <item>Constant value mode</item>
@@ -62,5 +66,43 @@
     <string name="bms_notif_subcont_title">Frequency: </string>
     <string name="bms_notif_subcont_none">none</string>
     <string name="bms_notif_subcont_plase_tap">Please, give a proper permission than tap to connect!</string>
+    <string name="title_activity_read_schedule">ReadScheduleActivity</string>
+
+    <!--ReadScheduleActivity resources-->
+    <string name="read_title_main">Read schedule from csv file</string>
+    <string name="read_btn_title">Open file</string>
+    <string name="read_dialog_error_title">An error occurred</string>
+    <string name="read_dialog_error_no_storage">Please check the availability of the external storage and try again</string>
+    <string name="read_dialog_error_no_folder">No directory SynthControl found on SD card</string>
+    <string name="read_dialog_error_no_storage_okbutton">Ok</string>
+    <string name="read_toast_error_select_entry">Please, select file. Than press Open File.</string>
+    <string name="read_dialog_error_parse_error">Error with data on line </string>
+    <string name="read_dialog_error_frequency_range">Frequency is out of range 35Mhz to 4.4 GHz on line</string>
+    <string name="read_dialog_error_time_range">Time is out of range 0 sec to 6 hours on line</string>
+    <string name="read_dialog_error_file_empty">Selected file is empty</string>
+
+
+
+    <string name="action_settings">Settings</string>
+
+    <!--WriteSceduleActivity resourses-->
+    <string name="write_title_main">Write schedule to csv file</string>
+    <string name="write_dialog_error_zero_array">No data to proceed</string>
+    <string name="write_explanation_title">Write schedule to csv file</string>
+    <string name="write_explanation_directory">File will be saved to SynthControl directory on SDcard 0</string>
+    <string name="write_explanation_file_name">Enter file name:</string>
+    <string name="write_file_btn_title">Write</string>
+    <string name="write_dialog_error_no_storage">Please check the availability of the external storage and try again</string>
+    <string name="write_dialog_error_no_folder">No directory SynthControl found on SD card. New directory created.</string>
+    <string name="write_toast_empty_file_name">File name is empty</string>
+    <string name="write_dialog_error_io_error">OI Error occurred</string>
+    <string name="write_dialog_over_title">Overwrite existing file?</string>
+    <string name="write_dialog_over_message_begin">File</string>
+    <string name="write_dialog_over_message_end">exists. Overwrite?</string>
+    <string name="write_dialog_over_btn_positive">Yes</string>
+    <string name="write_dialog_over_btn_negative">No</string>
+    <string name="write_toast_file_overwritten">File has been overwritten</string>
+    <string name="write_toast_file_wrote_begin">File</string>
+    <string name="write_toast_file_wrote_end">has been successfully written</string>
 
 </resources>

@@ -4,7 +4,10 @@
 
     <uses-feature android:name="android.hardware.usb.host" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -30,7 +33,7 @@
             -->
         </activity>
         <activity
-            android:name=".activity.additem.AddItemToScheduleActivity"
+            android:name=".activity.accessory.AddItemToScheduleActivity"
             android:label="@string/additem_title_activity" >
         </activity>
 
@@ -42,7 +45,8 @@
                 <action android:name="android.hardware.ubs.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
 
-            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </service>
         <!-- android:process=":BMService" -->
@@ -50,12 +54,22 @@
             android:name=".service.ServiceAutostartReceiver"
             android:enabled="true"
             android:exported="false"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+        <activity
+            android:name=".activity.accessory.ReadScheduleActivity"
+            android:label="@string/title_activity_read_schedule" >
+        </activity>
+        <activity
+            android:name=".activity.accessory.WriteScheduleActivity"
+            android:label="@string/write_title_main" >
+        </activity>
     </application>
 
 </manifest>

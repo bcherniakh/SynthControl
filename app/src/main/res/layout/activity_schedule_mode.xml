@@ -50,16 +50,29 @@
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="341dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/scheduler_btn_read_file"
+            android:id="@+id/readFileBtn"
+            android:layout_gravity="right" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/scheduler_btn_write_file"
+            android:id="@+id/writeFileBtn"
+            android:layout_gravity="left" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/scheduler_btn_add_item"
             android:id="@+id/addItemBtn"
-            android:nestedScrollingEnabled="false"
-            android:layout_gravity="bottom" />
+            android:layout_gravity="left" />
     </LinearLayout>
 
 </LinearLayout>

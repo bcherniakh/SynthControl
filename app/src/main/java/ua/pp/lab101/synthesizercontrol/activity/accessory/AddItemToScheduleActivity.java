@@ -1,4 +1,4 @@
-package ua.pp.lab101.synthesizercontrol.activity.additem;
+package ua.pp.lab101.synthesizercontrol.activity.accessory;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -131,16 +131,10 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
         finish();
     }
 
-    public void inputTimeValue(View v) {
-        Log.d(LOG_TAG, "time field clicked");
-        showToast("LOLKA!!!1111");
-    }
-
     private void showToast(String text) {
         Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
-
 
 }
