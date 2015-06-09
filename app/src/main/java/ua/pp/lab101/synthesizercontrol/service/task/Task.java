@@ -1,5 +1,6 @@
 package ua.pp.lab101.synthesizercontrol.service.task;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 /**
@@ -11,7 +12,8 @@ import java.util.LinkedHashMap;
 public class Task {
     private TaskType mTaskType;
     private double mConstantFrequency;
-    private LinkedHashMap<Integer, Double> mScheduleTask;
+    private double[] frequencyArray;
+    private int[] timeArray;
     private double mStartFrequency;
     private double mFinishFrequency;
     private int mFrequencyStep;
@@ -31,14 +33,15 @@ public class Task {
 
     /**
      * Constructor for creation schedule mode task. It takes a LinkedHashMap as parameter.
-     * @param scheduleTask is LinkedHashMap contains the time in seconds
-     *                     (as integer) and frequency in MHz (as double). Could not be null.
+     * @param frequencyArray is a array of frequency values in MHz (as double)
+     * @param timeArray is an array of time values in seconds
      * @param isCycled is flag that tells whether the task should be cycled.
      */
-    public Task(LinkedHashMap<Integer, Double> scheduleTask, boolean isCycled) {
-        if (scheduleTask == null) throw new IllegalArgumentException("task could not be null");
+    public Task(double[] frequencyArray, int[] timeArray, boolean isCycled) {
+        if (frequencyArray == null || timeArray == null) throw new IllegalArgumentException("task could not be null");
         mTaskType = TaskType.SCHEDULE_MODE;
-        this.mScheduleTask = scheduleTask;
+        this.frequencyArray = Arrays.copyOf(frequencyArray, frequencyArray.length);
+        this.timeArray = Arrays.copyOf(timeArray, timeArray.length);
         this.mIsCycled = isCycled;
     }
 
@@ -81,13 +84,28 @@ public class Task {
     }
 
     /**
-     * Returns the map of time in seconds and frequency in MHz for schedule mode.
-     * @return LinkedHashMap of K = time, V = frequency.
+     * Returns array of frequency values fo Scheduler mode
+     * @return frequency values in MHz
      */
-    public LinkedHashMap<Integer, Double> getScheduleTask() {
-        return mScheduleTask;
+    public double[] getFrequencyArray(){
+        return frequencyArray;
     }
 
+    /**
+     * Returns array of time values for scheduler mode
+     * @return
+     */
+    public int[] getTimeArray() {
+        return timeArray;
+    }
+
+    /**
+     * Returns is cycled value
+     * @return
+     */
+    public boolean getIsCycled() {
+        return mIsCycled;
+    }
     /**
      * Returns the start frequency value in MHz for frequency scan mode.
      * @return frequency value in MHz
@@ -119,6 +137,5 @@ public class Task {
     public int getTimeStep() {
         return mTimeStep;
     }
-
 
 }

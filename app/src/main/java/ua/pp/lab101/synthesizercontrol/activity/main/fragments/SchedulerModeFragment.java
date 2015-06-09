@@ -14,18 +14,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToScheduleActivity;
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.activity.accessory.ReadScheduleActivity;
 import ua.pp.lab101.synthesizercontrol.activity.accessory.WriteScheduleActivity;
+import ua.pp.lab101.synthesizercontrol.activity.main.IServiceDistributor;
+import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
+import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
+import ua.pp.lab101.synthesizercontrol.service.task.Task;
 
 import static android.widget.AdapterView.AdapterContextMenuInfo;
 
@@ -35,6 +42,8 @@ public class SchedulerModeFragment extends Fragment {
     private Button mAddBtn = null;
     private Button mReadBtn = null;
     private Button mWriteBtn = null;
+    private ToggleButton mRunBtn = null;
+    private CheckBox mCycleCheckBox = null;
     private static final int CM_DELETE_ID = 1;
     private static final int CM_EDIT_ID = 2;
     private static final int ADD_ITEM_RUN = 1;
@@ -57,6 +66,8 @@ public class SchedulerModeFragment extends Fragment {
 
     private int mChamgeIndex = 0;
 
+    private BoardManagerService mService;
+
     public SchedulerModeFragment() {
         // Required empty public constructor
     }
@@ -64,6 +75,13 @@ public class SchedulerModeFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        try {
+            IServiceDistributor serviceDistributor = (IServiceDistributor) activity;
+            mService = serviceDistributor.getService();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + "must implement OnFragmentInteractionListener");
+        }
         setRetainInstance(true);
     }
 
@@ -71,6 +89,7 @@ public class SchedulerModeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        super.onCreateView(inflater, container, savedInstanceState);
         return inflater.inflate(R.layout.activity_schedule_mode, container, false);
     }
 
@@ -99,6 +118,14 @@ public class SchedulerModeFragment extends Fragment {
                 onWriteBtnClick();
             }
         });
+        mRunBtn = (ToggleButton) getActivity().findViewById(R.id.startProgramBtn);
+        mRunBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onRunButtonClicked();
+            }
+        });
+        mCycleCheckBox = (CheckBox) getActivity().findViewById(R.id.cycleTaskCb);
         String[] from = {ATTRIBUTE_FREQUENCY, ATTRIBUTE_TIME};
         int[] to = {R.id.scheduleFrequencyText, R.id.scheduleTimeText};
         mScheduleListAdapter = new SimpleAdapter(getActivity(), mScheduleData, R.layout.list_item_schedule_mode_task, from, to);
@@ -107,6 +134,87 @@ public class SchedulerModeFragment extends Fragment {
         mScheduleLv.addHeaderView(v, "", false);
         mScheduleLv.setAdapter(mScheduleListAdapter);
         registerForContextMenu(mScheduleLv);
+
+        ServiceStatus currentStatus = mService.getCurrentStatus();
+        if (currentStatus.equals(ServiceStatus.SCHEDULE_MODE)) {
+            Task currentTask = mService.getCurrentTask();
+            fillScheduleFromArrays(currentTask.getFrequencyArray(), currentTask.getTimeArray());
+            setControlsDisabled();
+            mRunBtn.setChecked(true);
+        } else {
+            mService.shutdownDevice();
+            setControlsEnabled();
+            mRunBtn.setChecked(false);
+        }
+    }
+
+    private void onRunButtonClicked() {
+        if (mRunBtn.isChecked()) {
+
+            if (mService == null) {
+                showToast("Service is dead!");
+                mRunBtn.setChecked(false);
+                return;
+            }
+
+            if (!mService.isDeviceConnected()) {
+                showToast(getString(R.string.const_msg_no_device));
+                mRunBtn.setChecked(false);
+                return;
+            }
+
+            if (mScheduleData.isEmpty()) {
+                showToast(getString(R.string.scheduler_toast_err_schedule_empty));
+                mRunBtn.setChecked(false);
+                return;
+            }
+
+            Log.d(LOG_TAG, "Task performed");
+            boolean cycle = mCycleCheckBox.isChecked();
+            double[] frequency = getFrequencyValues();
+            int[] time = getTimeValues();
+            Task task = new Task(frequency, time, cycle);
+            Log.d(LOG_TAG, String.valueOf(cycle));
+            mService.performTask(task);
+            setControlsDisabled();
+        } else {
+            //stopping service
+            Log.d(LOG_TAG, "Button toggled off");
+            setControlsEnabled();
+            mService.shutdownDevice();
+        }
+    }
+
+    private double[] getFrequencyValues() {
+        double[] frequency = new double[mScheduleData.size()];
+        for (int i = 0; i < mScheduleData.size(); i++) {
+            frequency[i] = Double.parseDouble(mScheduleData.get(i).get(ATTRIBUTE_FREQUENCY).toString());
+        }
+        return frequency;
+    }
+
+    private int[] getTimeValues() {
+        int[] time = new int[mScheduleData.size()];
+        for (int i = 0; i < mScheduleData.size(); i++) {
+            time[i] = Integer.parseInt(mScheduleData.get(i).get(ATTRIBUTE_TIME).toString());
+        }
+        return time;
+    }
+
+    private void setControlsDisabled() {
+        mScheduleLv.setEnabled(false);
+        mAddBtn.setEnabled(false);
+        mReadBtn.setEnabled(false);
+        mWriteBtn.setEnabled(false);
+        mCycleCheckBox.setEnabled(false);
+    }
+
+    private void setControlsEnabled() {
+        mScheduleLv.setEnabled(true);
+        mAddBtn.setEnabled(true);
+        mReadBtn.setEnabled(true);
+        mWriteBtn.setEnabled(true);
+        mCycleCheckBox.setEnabled(true);
     }
 
     private void onWriteBtnClick() {
@@ -194,23 +302,27 @@ public class SchedulerModeFragment extends Fragment {
                 Log.d(LOG_TAG, "read file failed");
                 return;
             }
-            mScheduleData.clear();
+
             double[] frequency = data.getDoubleArrayExtra(ATTRIBUTE_FREQUENCY_ARRAY);
             int[] time = data.getIntArrayExtra(ATTRIBUTE_TIME_ARRAY);
-            if (frequency.length != time.length) {
-                Log.d(LOG_TAG, "Arrays length mismatch");
-                return;
-            }
-
-            for (int i = 0; i < frequency.length; i++) {
-                mScheduleEntry = new HashMap<String, Object>();
-                mScheduleEntry.put(ATTRIBUTE_FREQUENCY, String.valueOf(frequency[i]));
-                mScheduleEntry.put(ATTRIBUTE_TIME, String.valueOf(time[i]));
-                mScheduleData.add(mScheduleEntry);
-            }
-            mScheduleListAdapter.notifyDataSetChanged();
+            fillScheduleFromArrays(frequency, time);
 
         }
+    }
+    private void fillScheduleFromArrays(double[] frequency, int[] time) {
+        if (frequency.length != time.length) {
+            Log.d(LOG_TAG, "Arrays length mismatch");
+            return;
+        }
+
+        mScheduleData.clear();
+        for (int i = 0; i < frequency.length; i++) {
+            mScheduleEntry = new HashMap<String, Object>();
+            mScheduleEntry.put(ATTRIBUTE_FREQUENCY, String.valueOf(frequency[i]));
+            mScheduleEntry.put(ATTRIBUTE_TIME, String.valueOf(time[i]));
+            mScheduleData.add(mScheduleEntry);
+        }
+        mScheduleListAdapter.notifyDataSetChanged();
     }
 
     private void editDataInList(String frequency, String time) {
@@ -235,5 +347,4 @@ public class SchedulerModeFragment extends Fragment {
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
-
 }

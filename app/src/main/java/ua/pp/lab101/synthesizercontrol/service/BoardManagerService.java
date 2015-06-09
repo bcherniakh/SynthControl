@@ -1,15 +1,14 @@
 package ua.pp.lab101.synthesizercontrol.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import android.app.NotificationManager;
-//import android.support.v4.app.NotificationManagerCompat;
 import android.app.PendingIntent;
 import android.app.Service;
-//import android.app.TaskStackBuilder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.content.BroadcastReceiver;
@@ -24,16 +23,9 @@ import android.util.Log;
 import com.ftdi.j2xx.D2xxManager;
 import com.ftdi.j2xx.FT_Device;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-
 import ua.pp.lab101.synthesizercontrol.activity.main.MainActivity;
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.adregisters.ADBoardController;
-import ua.pp.lab101.synthesizercontrol.service.network.NetworkNotifier;
 import ua.pp.lab101.synthesizercontrol.service.task.Task;
 import ua.pp.lab101.synthesizercontrol.service.task.TaskType;
 
@@ -43,7 +35,7 @@ public class BoardManagerService extends Service {
 
     private static final int ONGOING_NOTIFICATION_ID = 1488;
     private static final String LOG_TAG = "BoardService";
-    private ExecutorService taskExecutor;
+    private ExecutorService mTaskExecutor;
 
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mNotificationBuilder;
@@ -62,10 +54,8 @@ public class BoardManagerService extends Service {
     /*workflow variables*/
     private boolean mDeviceConnected;
     private double mCurrentFrequency;
+    private Task mCurrentTask;
     private ServiceStatus mServiceStatus;
-
-    /*backend notifier*/
-    NetworkNotifier mNetworkNotifier = null;
 
     public BoardManagerService() {
     }
@@ -73,7 +63,7 @@ public class BoardManagerService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(LOG_TAG, "onCreate method");
-        taskExecutor = Executors.newFixedThreadPool(1);
+        mTaskExecutor = Executors.newFixedThreadPool(1);
 
         //getting an instance of Board controller
         adf = ADBoardController.getInstance();
@@ -111,20 +101,6 @@ public class BoardManagerService extends Service {
         /*first run initialization*/
         mCurrentFrequency = 0;
         changeServiceStatus(ServiceStatus.IDLE);
-
-        /*Network notifier initialization*/
-
-        initialyezeNotifier();
-    }
-
-    private void initialyezeNotifier() {
-        String URL = "nimbits.ashram.me:8080";
-        String email = "immlf@mail.ru";
-        String token = "verystrongtoken";
-        String recourseID = "UsedFrequency";
-
-        mNetworkNotifier = new NetworkNotifier(URL, email, token, recourseID);
-
     }
 
     private void connectDevice() {
@@ -198,14 +174,12 @@ public class BoardManagerService extends Service {
         return mFtDev.write(data);
     }
 
-
-    /*public API classes*/
     public void shutdownDevice() {
         if (mDeviceConnected) {
             changeServiceStatus(ServiceStatus.IDLE);
             writeData(adf.turnOffTheDevice());
-            String nimbitsNote = "Device shut down";
-            mNetworkNotifier.notifyServer(0, nimbitsNote);
+        } else {
+            Log.e(LOG_TAG, "Turn off attempt. Device disconnected.");
         }
     }
 
@@ -217,11 +191,14 @@ public class BoardManagerService extends Service {
     public void performTask(Task task) {
         if (mDeviceConnected == false) return;
         TaskType currentTaskType = task.getTaskType();
+        mCurrentTask = task;
         switch (currentTaskType) {
             case CONSTANT_FREQUENCY_MODE:
                 performConstantModeTask(task.getConstantFrequency());
                 break;
             case SCHEDULE_MODE:
+                Log.d(LOG_TAG, "Got the task!!111");
+                performScheduleTask(task.getFrequencyArray(), task.getTimeArray(), task.getIsCycled());
                 break;
             case FREQUENCY_SCAN_MODE:
                 break;
@@ -232,6 +209,7 @@ public class BoardManagerService extends Service {
         mObservers.add(observer);
     }
 
+
     public ServiceStatus getCurrentStatus() {
         return mServiceStatus;
     }
@@ -239,6 +217,11 @@ public class BoardManagerService extends Service {
     public double getCurrentFrequency() {
         return mCurrentFrequency;
     }
+
+    public Task getCurrentTask() {
+        return mCurrentTask;
+    }
+
     /* TODO need to finish the realization of this method */
     private void updateObservers(){
         for (IServiceObserver observer : mObservers) {
@@ -247,45 +230,63 @@ public class BoardManagerService extends Service {
     }
 
     private void performConstantModeTask(double frequencyValue) {
-        mCurrentFrequency = frequencyValue;
-        writeData(adf.setFrequency(frequencyValue));
-        writeData(adf.turnOnDevice());
+        setFrequencyOnTheDevice(frequencyValue);
         changeServiceStatus(ServiceStatus.CONSTANT_MODE);
-        String nimbitsNote = "Constant mode";
-        int resultCode = mNetworkNotifier.notifyServer(frequencyValue, nimbitsNote);
-        if (resultCode ==200) {
-            Log.d(LOG_TAG, "Data successfully sent");
+    }
+
+    private void performScheduleTask(double[] frequency, int[] time, boolean isCycled) {
+        if (frequency.length != time.length) {
+            Log.e(LOG_TAG, "Array length mismatch");
+            return;
+        }
+
+        TaskPerformer performer = new TaskPerformer(frequency, time, isCycled);
+        mTaskExecutor.execute(performer);
+        changeServiceStatus(ServiceStatus.SCHEDULE_MODE);
+    }
+
+    private void setFrequencyOnTheDevice(double frequencyValue) {
+        if (mDeviceConnected) {
+            mCurrentFrequency = frequencyValue;
+            writeData(adf.setFrequency(frequencyValue));
+            writeData(adf.turnOnDevice());
         } else {
-            Log.d(LOG_TAG, "Data sending failed. Code: " + resultCode);
+            Log.e(LOG_TAG, "Set frequency attempt. Device disconnected.");
         }
     }
 
     class TaskPerformer implements Runnable {
-        private double frequencyValue;
-        private int timeOfAction;
+        private double[] frequency;
+        private int[] time;
+        private boolean isCycled;
 
-        public TaskPerformer(double frequencyValue) {
-            this.frequencyValue = frequencyValue;
-            Log.d(LOG_TAG, "Write run created");
+        public TaskPerformer(double[] frequency, int[] time, boolean isCycled) {
+            this.frequency = Arrays.copyOf(frequency, frequency.length);
+            this.time = Arrays.copyOf(time, time.length);
+            this.isCycled = isCycled;
+            Log.d(LOG_TAG, "Task created");
         }
 
         public void run() {
-            Log.d(LOG_TAG, "Write run started");
-            writeData(adf.setFrequency(frequencyValue));
-            writeData(adf.turnOnDevice());
-            try {
-                TimeUnit.SECONDS.sleep(20);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                Log.d(LOG_TAG, "Pause was interrupted");
+            Log.d(LOG_TAG, "Task started");
+            for (int i = 0; i < frequency.length; i++) {
+                mCurrentFrequency = frequency[i];
+                changeServiceStatus(ServiceStatus.SCHEDULE_MODE);
+                writeData(adf.setFrequency(frequency[i]));
+                writeData(adf.turnOnDevice());
+                try {
+                    TimeUnit.SECONDS.sleep(time[i]);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Log.d(LOG_TAG, "Pause was interrupted");
+                }
             }
             stop();
         }
 
         void stop() {
-            Log.d(LOG_TAG, "service stops");
-            writeData(adf.turnOffTheDevice());
-            //stopSelf(startId);
+            Log.d(LOG_TAG, "Task ends");
+            shutdownDevice();
         }
     }
 
@@ -307,8 +308,12 @@ public class BoardManagerService extends Service {
                 changeNotificationAll(serviceStatusContent, serviceStatusSubtext);
                 break;
             case SCHEDULE_MODE:
+                mServiceStatus = newStatus;
+                serviceStatusContent = getString(R.string.bms_notif_content_status_schedule);
+                serviceStatusSubtext = String.valueOf(mCurrentFrequency);
+                changeNotificationAll(serviceStatusContent, serviceStatusSubtext);
                 break;
-            case SWIPE_MODE:
+            case FREQUENCY_SCAN_MODE:
                 break;
             case DEVICE_DISCONNECTED:
                 mServiceStatus = newStatus;

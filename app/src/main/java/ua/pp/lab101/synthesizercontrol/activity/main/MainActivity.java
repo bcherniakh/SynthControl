@@ -87,8 +87,8 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        Log.d(LOG_TAG, "Saving instance");
         super.onSaveInstanceState(savedInstanceState);
+        Log.d(LOG_TAG, "Saving instance");
     }
 
     @Override
@@ -115,11 +115,7 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_stop_service) {
             if (mBound) {
             unbindService(mConnection);
@@ -138,6 +134,7 @@ public class MainActivity extends ActionBarActivity
             /*TODO need to implemet explanation for user*/
             return;
         }
+
         FragmentTransaction fragmentTransaction = mFragmentManager
                 .beginTransaction();
 
@@ -145,6 +142,9 @@ public class MainActivity extends ActionBarActivity
             /*TODO implement explanation for user */
             if (currentIndex == -1) {
                 fragmentTransaction.replace(R.id.fragment_container, mOperationModeFragment);
+            } else {
+                Log.d(LOG_TAG, "No device present");
+                //return;
             }
         }
 
@@ -153,6 +153,7 @@ public class MainActivity extends ActionBarActivity
         } else if (currentIndex == 1) {
             fragmentTransaction.replace(R.id.fragment_container, mSchedulerModeFragment);
         }
+
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
         getFragmentManager().executePendingTransactions();

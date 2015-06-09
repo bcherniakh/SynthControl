@@ -7,6 +7,6 @@ public enum ServiceStatus {
     IDLE,
     CONSTANT_MODE,
     SCHEDULE_MODE,
-    SWIPE_MODE,
+    FREQUENCY_SCAN_MODE,
     DEVICE_DISCONNECTED;
 }
