@@ -1,8 +1,12 @@
 package ua.pp.lab101.synthesizercontrol.activity.main;
 
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.app.FragmentManager;
@@ -10,20 +14,21 @@ import android.app.FragmentTransaction;
 import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.ConstantModeFragment;
+import ua.pp.lab101.synthesizercontrol.activity.main.fragments.FrequencyScanModeFragment;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.OperationModeFragment;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.SchedulerModeFragment;
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
-import ua.pp.lab101.synthesizercontrol.service.IServiceObserver;
 import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
 
 public class MainActivity extends ActionBarActivity
-        implements OperationModeFragment.OperationModeListener, IServiceDistributor,
-        IServiceObserver{
+        implements OperationModeFragment.OperationModeListener, IServiceDistributor{
     /*Service members*/
     private BoardManagerService mService;
     private BoardManagerService.BoardManagerBinder mBinder;
@@ -36,6 +41,7 @@ public class MainActivity extends ActionBarActivity
     private final OperationModeFragment mOperationModeFragment = new OperationModeFragment();
     private ConstantModeFragment mConstantModeFragment = new ConstantModeFragment();
     private SchedulerModeFragment mSchedulerModeFragment = new SchedulerModeFragment();
+    private FrequencyScanModeFragment mFrequencyScanFragment = new FrequencyScanModeFragment();
 
     private static final String LOG_TAG = "SControlMain";
 
@@ -56,21 +62,13 @@ public class MainActivity extends ActionBarActivity
             mFragmentManager.executePendingTransactions();
         }
 
-        //Strange spike for android 4.0.3
-        if (savedInstanceState != null && mService == null) {
-            FragmentTransaction fragmentTransaction = mFragmentManager
-                    .beginTransaction();
-            fragmentTransaction.replace(R.id.fragment_container, mOperationModeFragment);
-            fragmentTransaction.commit();
-            mFragmentManager.executePendingTransactions();
-        }
-
-        startService(new Intent(this, BoardManagerService.class).putExtra("Text", "Create title"));
+        startService(new Intent(this, BoardManagerService.class));
 
         /*binding the BoardManagerService */
         Intent intent = new Intent(this, BoardManagerService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-
+        if (!mBound) {
+            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        }
 
     }
 
@@ -80,8 +78,16 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter intentFilterDeviceUnplugged = new IntentFilter(BoardManagerService.INTENT_DEVICE_UNPLUGGED);
+        registerReceiver(mDeviceUnpluggedReceiver, intentFilterDeviceUnplugged);
+    }
+
+    @Override
     public void onPause() {
         Log.d(LOG_TAG, "onPause");
+        unregisterReceiver(mDeviceUnpluggedReceiver);
         super.onPause();
     }
 
@@ -94,7 +100,7 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(LOG_TAG, "On fucking stop acts!");
+        Log.d(LOG_TAG, "On stop acts!");
     }
 
     @Override
@@ -131,7 +137,6 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onModeSelected(int currentIndex) {
         if (!mBound) {
-            /*TODO need to implemet explanation for user*/
             return;
         }
 
@@ -139,12 +144,12 @@ public class MainActivity extends ActionBarActivity
                 .beginTransaction();
 
         if (!mService.isDeviceConnected()) {
-            /*TODO implement explanation for user */
             if (currentIndex == -1) {
                 fragmentTransaction.replace(R.id.fragment_container, mOperationModeFragment);
             } else {
+                showDeviceUnpluggedDialog();
                 Log.d(LOG_TAG, "No device present");
-                //return;
+                return;
             }
         }
 
@@ -152,6 +157,8 @@ public class MainActivity extends ActionBarActivity
             fragmentTransaction.replace(R.id.fragment_container, mConstantModeFragment);
         } else if (currentIndex == 1) {
             fragmentTransaction.replace(R.id.fragment_container, mSchedulerModeFragment);
+        } else if (currentIndex == 2) {
+            fragmentTransaction.replace(R.id.fragment_container, mFrequencyScanFragment);
         }
 
         fragmentTransaction.addToBackStack(null);
@@ -182,7 +189,6 @@ public class MainActivity extends ActionBarActivity
             mBinder = (BoardManagerService.BoardManagerBinder) service;
             mService = mBinder.getService();
             mBound = true;
-            mService.registerObserver((IServiceObserver)MainActivity.this);
             ServiceStatus currentStatus = mService.getCurrentStatus();
             switch (currentStatus) {
                 case CONSTANT_MODE:
@@ -190,6 +196,9 @@ public class MainActivity extends ActionBarActivity
                     break;
                 case SCHEDULE_MODE:
                     onModeSelected(1);
+                    break;
+                case FREQUENCY_SCAN_MODE:
+                    onModeSelected(2);
                     break;
             }
         }
@@ -205,8 +214,32 @@ public class MainActivity extends ActionBarActivity
         return mService;
     }
 
-    @Override
-    public void update() {
-        onModeSelected(-1);
+    private final BroadcastReceiver mDeviceUnpluggedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            onModeSelected(UNSELECTED);
+            showDeviceUnpluggedDialog();
+        }
+    };
+
+    private void showToast(String text) {
+        Toast toast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+    }
+
+    private void showDeviceUnpluggedDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.main_dialog_device_unplugged_title);
+        builder.setMessage(getString(R.string.main_dialog_device_unplugged_message));
+        builder.setCancelable(false);
+        builder.setNegativeButton(R.string.main_dialog_device_unplugged_cancel_btn,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }

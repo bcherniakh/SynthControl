@@ -1,11 +1,14 @@
 <resources>
 
     <!--String resources in general -->
-    <string name="main_app_name">SynthControl</string>
+    <string name="main_app_name">Synthesizer Control</string>
 
     <!--Fragment titles-->
     <string name="main_constant_title">Constant mode</string>
     <string name="main_scheduler_title">Scheduler mode</string>
+    <string name="main_dialog_device_unplugged_title">Device have been unplugged!</string>
+    <string name="main_dialog_device_unplugged_message">Sorry, device have been unplugged!</string>
+    <string name="main_dialog_device_unplugged_cancel_btn">Ok!</string>
 
     <!--Constant fragment resources-->
     <string name="const_fragment_title">Constant mode</string>
@@ -35,10 +38,12 @@
     <string name="scheduler_btn_hint_read_file">Press to read list from file</string>
     <string name="scheduler_toast_err_schedule_empty">Schedule is empty.</string>
     <string name="scheduler_checkbox_title">cycle</string>
+    <string name="schedule_toast_task_done">Task done!</string>
 
     <string-array name="operation_modes">
         <item>Constant value mode</item>
-        <item>Scheduler mode</item>
+        <item>Schedule mode</item>
+        <item>Frequency scan mode</item>
     </string-array>
 
     <!--Add item to schedule activity resources-->
@@ -104,5 +109,18 @@
     <string name="write_toast_file_overwritten">File has been overwritten</string>
     <string name="write_toast_file_wrote_begin">File</string>
     <string name="write_toast_file_wrote_end">has been successfully written</string>
+
+    <!--Frequency scan fragment-->
+    <string name="freq_scan_main_title">Frequency scan mode</string>
+    <string name="freq_scan_cycle_checkbox">Cycle</string>
+    <string name="freq_scan_frequency_from">From (MHz)</string>
+    <string name="freq_scan_frequency_to">To (MHz)</string>
+    <string name="freq_scan_frequency_step">Step (MHz)</string>
+    <string name="freq_scan_time_step">Time step (seconds)</string>
+    <string name="freq_scan_apply_btn_title">Apply</string>
+    <string name="freq_scan_toast_frequency_range">Frequency is out of range from 35Mhz to 4.4 GHz</string>
+    <string name="freq_scan_toast_step_incorrect">Frequency step could be in thr range from 0.001 to 1000 Mhz</string>
+    <string name="freq_scan_toast_time_incorrect">Time step could be in the range from 0.1 second to 1 hour</string>
+    <string name="freq_scan_toast_from_to">Value from is greater or equal to the value to</string>
 
 </resources>

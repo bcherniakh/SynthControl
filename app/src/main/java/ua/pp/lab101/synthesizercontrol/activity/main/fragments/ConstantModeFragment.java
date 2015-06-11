@@ -12,6 +12,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.math.RoundingMode;
+import java.math.BigDecimal;
+
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.activity.main.IServiceDistributor;
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
@@ -43,13 +46,6 @@ public class ConstantModeFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try {
-            IServiceDistributor serviceDistributor = (IServiceDistributor) activity;
-            mService = serviceDistributor.getService();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + "must implement OnFragmentInteractionListener");
-        }
         setRetainInstance(true);
     }
 
@@ -58,7 +54,7 @@ public class ConstantModeFragment extends Fragment {
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.activity_constant_mode, container, false);
+        View view = inflater.inflate(R.layout.fragment_constant_mode, container, false);
         return view;
 
     }
@@ -76,17 +72,6 @@ public class ConstantModeFragment extends Fragment {
                 }
             });
         }
-        ServiceStatus currentStatus = mService.getCurrentStatus();
-        if (currentStatus.equals(ServiceStatus.CONSTANT_MODE)) {
-            mFrequencyValue.setText(String.valueOf(mService.getCurrentFrequency()));
-            mFrequencyValue.setEnabled(false);
-            mPowerBtn.setChecked(true);
-        } else {
-            mService.shutdownDevice();
-            mFrequencyValue.setText(String.valueOf(0.0));
-            mFrequencyValue.setEnabled(true);
-            mPowerBtn.setChecked(false);
-        }
     }
 
     @Override
@@ -97,7 +82,22 @@ public class ConstantModeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        mService = getService();
+        if (mService != null) {
+            ServiceStatus currentStatus = mService.getCurrentStatus();
+            if (currentStatus.equals(ServiceStatus.CONSTANT_MODE)) {
+                mFrequencyValue.setText(String.valueOf(mService.getCurrentFrequency()));
+                mFrequencyValue.setEnabled(false);
+                mPowerBtn.setChecked(true);
+            } else {
+                mService.stopAnyWorkingTask();
+                mFrequencyValue.setText(String.valueOf(0.0));
+                mFrequencyValue.setEnabled(true);
+                mPowerBtn.setChecked(false);
+            }
+        }
     }
+
 
     @Override
     public void onPause() {
@@ -121,11 +121,15 @@ public class ConstantModeFragment extends Fragment {
 
     /*Main logic methods*/
     public void buttonSendPressed() {
+        if (mService == null) {
+            mService = getService();
+        }
 
         if (mPowerBtn.isChecked()) {
             double frequencyValue = 0;
             try {
                 frequencyValue = Double.parseDouble(mFrequencyValue.getText().toString());
+                frequencyValue = new BigDecimal(frequencyValue).setScale(3, RoundingMode.UP).doubleValue();
             } catch (Exception parseException) {
                 Log.e(LOG_TAG, "Parse double error occurred");
                 showToast(getString(R.string.const_msg_frequency_input_err));
@@ -159,8 +163,19 @@ public class ConstantModeFragment extends Fragment {
             //stopping service
             Log.i(LOG_TAG, "Button toggled off");
             mFrequencyValue.setEnabled(true);
-            mService.shutdownDevice();
+            mService.stopAnyWorkingTask();
         }
+    }
+    private BoardManagerService getService(){
+        BoardManagerService service = null;
+        try {
+            IServiceDistributor serviceDistributor = (IServiceDistributor) getActivity();
+            service = serviceDistributor.getService();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + "must implement OnFragmentInteractionListener");
+        }
+        return service;
     }
 
     private void showToast(String textToShow) {

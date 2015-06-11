@@ -16,7 +16,7 @@ public class Task {
     private int[] timeArray;
     private double mStartFrequency;
     private double mFinishFrequency;
-    private int mFrequencyStep;
+    private double mFrequencyStep;
     private int mTimeStep;
     private boolean mIsCycled;
 
@@ -54,7 +54,7 @@ public class Task {
      * @param timeStep is a time step in seconds. Should not be more than zero.
      * @param isCycled is flag that tells whether the task should be cycled.
      */
-    public Task(double startFrequency, double finishFrequency, int frequencyStep, int timeStep, boolean isCycled) {
+    public Task(double startFrequency, double finishFrequency, double frequencyStep, int timeStep, boolean isCycled) {
         if ((startFrequency < 0) || (finishFrequency < 0) ||
                 (frequencyStep <= 0) || (timeStep <=0) )
             throw new IllegalArgumentException("Incorrect parameters");
@@ -126,7 +126,7 @@ public class Task {
      * Returns the value of the step in MHz for frequency scan mode.
      * @return value of the frequency step in MHz
      */
-    public int getFrequencyStep() {
+    public double getFrequencyStep() {
         return mFrequencyStep;
     }
 

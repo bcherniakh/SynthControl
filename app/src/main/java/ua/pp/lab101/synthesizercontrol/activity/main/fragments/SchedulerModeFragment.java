@@ -3,7 +3,10 @@ package ua.pp.lab101.synthesizercontrol.activity.main.fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -22,7 +25,6 @@ import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToScheduleActivity;
@@ -50,6 +52,8 @@ public class SchedulerModeFragment extends Fragment {
     private static final int READ_FILE_RUN = 2;
     private static final int WRITE_FILE_RUN = 3;
 
+
+
     // atribute names for map
     public static final String ATTRIBUTE_FREQUENCY = "frequency";
     public static final String ATTRIBUTE_TIME = "time";
@@ -75,13 +79,6 @@ public class SchedulerModeFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try {
-            IServiceDistributor serviceDistributor = (IServiceDistributor) activity;
-            mService = serviceDistributor.getService();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + "must implement OnFragmentInteractionListener");
-        }
         setRetainInstance(true);
     }
 
@@ -90,7 +87,7 @@ public class SchedulerModeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.activity_schedule_mode, container, false);
+        return inflater.inflate(R.layout.fragment_schedule_mode, container, false);
     }
 
     @Override
@@ -134,21 +131,52 @@ public class SchedulerModeFragment extends Fragment {
         mScheduleLv.addHeaderView(v, "", false);
         mScheduleLv.setAdapter(mScheduleListAdapter);
         registerForContextMenu(mScheduleLv);
+    }
 
-        ServiceStatus currentStatus = mService.getCurrentStatus();
-        if (currentStatus.equals(ServiceStatus.SCHEDULE_MODE)) {
-            Task currentTask = mService.getCurrentTask();
-            fillScheduleFromArrays(currentTask.getFrequencyArray(), currentTask.getTimeArray());
-            setControlsDisabled();
-            mRunBtn.setChecked(true);
-        } else {
-            mService.shutdownDevice();
-            setControlsEnabled();
-            mRunBtn.setChecked(false);
+    @Override
+    public void onResume() {
+        super.onResume();
+        mService = getService();
+        if (mService != null) {
+            ServiceStatus currentStatus = mService.getCurrentStatus();
+            if (currentStatus.equals(ServiceStatus.SCHEDULE_MODE)) {
+                Task currentTask = mService.getCurrentTask();
+                fillScheduleFromArrays(currentTask.getFrequencyArray(), currentTask.getTimeArray());
+                setControlsDisabled();
+                mRunBtn.setChecked(true);
+            } else {
+                mService.stopAnyWorkingTask();
+                setControlsEnabled();
+                mRunBtn.setChecked(false);
+            }
         }
+        IntentFilter intFilt = new IntentFilter(BoardManagerService.INTENT_TASK_DONE);
+        getActivity().registerReceiver(mTaskFinishedReceiver, intFilt);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unregisterReceiver(mTaskFinishedReceiver);
+    }
+
+    private BoardManagerService getService(){
+        BoardManagerService service = null;
+        try {
+            IServiceDistributor serviceDistributor = (IServiceDistributor) getActivity();
+            service = serviceDistributor.getService();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + "must implement OnFragmentInteractionListener");
+        }
+        return service;
     }
 
     private void onRunButtonClicked() {
+        if (mService == null) {
+            mService = getService();
+        }
+
         if (mRunBtn.isChecked()) {
 
             if (mService == null) {
@@ -181,7 +209,7 @@ public class SchedulerModeFragment extends Fragment {
             //stopping service
             Log.d(LOG_TAG, "Button toggled off");
             setControlsEnabled();
-            mService.shutdownDevice();
+            mService.stopAnyWorkingTask();
         }
     }
 
@@ -347,4 +375,13 @@ public class SchedulerModeFragment extends Fragment {
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
+
+    private final BroadcastReceiver mTaskFinishedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mRunBtn.setChecked(false);
+            setControlsEnabled();
+            showToast(getString(R.string.schedule_toast_task_done));
+        }
+    };
 }
