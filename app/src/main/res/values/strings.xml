@@ -119,7 +119,7 @@
     <string name="freq_scan_time_step">Time step (seconds)</string>
     <string name="freq_scan_apply_btn_title">Apply</string>
     <string name="freq_scan_toast_frequency_range">Frequency is out of range from 35Mhz to 4.4 GHz</string>
-    <string name="freq_scan_toast_step_incorrect">Frequency step could be in thr range from 0.001 to 1000 Mhz</string>
+    <string name="freq_scan_toast_step_incorrect">Frequency step could be in the range from 0.001 to 1000 Mhz</string>
     <string name="freq_scan_toast_time_incorrect">Time step could be in the range from 0.1 second to 1 hour</string>
     <string name="freq_scan_toast_from_to">Value from is greater or equal to the value to</string>
 

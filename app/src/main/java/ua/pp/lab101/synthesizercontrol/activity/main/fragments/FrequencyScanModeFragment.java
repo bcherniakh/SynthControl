@@ -179,7 +179,7 @@ public class FrequencyScanModeFragment extends Fragment {
     }
 
     private double roundValue(double value) {
-        return new BigDecimal(value).setScale(3, RoundingMode.UP).doubleValue();
+        return new BigDecimal(value).setScale(3, RoundingMode.HALF_EVEN).doubleValue();
     }
     private boolean checkAllValues(double fromFrequency, double toFrequency, double frequencyStep,
                                    double timeStep) {
@@ -200,7 +200,7 @@ public class FrequencyScanModeFragment extends Fragment {
         }
 
         if (!checkTimeStepValue(timeStep)) {
-            showToast(getString(R.string.freq_scan_toast_step_incorrect));
+            showToast(getString(R.string.freq_scan_toast_time_incorrect));
             return false;
         }
 
@@ -217,7 +217,7 @@ public class FrequencyScanModeFragment extends Fragment {
     }
 
     private boolean checkTimeStepValue(double timeStep) {
-        if ((timeStep >= 0.1) && (timeStep <= 3600)) return true;
+        if ((timeStep >= 0.01) && (timeStep <= 3600)) return true;
         return false;
     }
 
