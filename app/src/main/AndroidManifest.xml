@@ -70,6 +70,10 @@
             android:name=".activity.accessory.WriteScheduleActivity"
             android:label="@string/write_title_main" >
         </activity>
+        <activity
+            android:name=".activity.accessory.AddItemToFreqScanActivity"
+            android:label="@string/additem_freq_scan_main_title" >
+        </activity>
     </application>
 
 </manifest>

@@ -110,17 +110,25 @@
     <string name="write_toast_file_wrote_begin">File</string>
     <string name="write_toast_file_wrote_end">has been successfully written</string>
 
+
+    <string name="additem_freq_scan_main_title">Add item fo frequency scan mode</string>
+    <string name="additem_freq_scan_cycle_checkbox">Cycle</string>
+    <string name="additem_freq_scan_frequency_from">From (MHz)</string>
+    <string name="additem_freq_scan_frequency_to">To (MHz)</string>
+    <string name="additem_freq_scan_frequency_step">Step (MHz)</string>
+    <string name="additem_freq_scan_time_step">Time step (seconds)</string>
+    <string name="additem_freq_scan_apply_btn_title">Apply</string>
+    <string name="additem_freq_scan_toast_frequency_range">Frequency is out of range from 35Mhz to 4.4 GHz</string>
+    <string name="additem_freq_scan_toast_step_incorrect">Frequency step could be in the range from 0.001 to 1000 Mhz</string>
+    <string name="additem_freq_scan_toast_time_incorrect">Time step could be in the range from 0.1 second to 1 hour</string>
+    <string name="additem_freq_scan_toast_from_to">Value from is greater or equal to the value to</string>
+    <string name="additem_title_activity_add_item_to_freq_scan">AddItemToFreqScanActivity</string>
+
+
     <!--Frequency scan fragment-->
-    <string name="freq_scan_main_title">Frequency scan mode</string>
-    <string name="freq_scan_cycle_checkbox">Cycle</string>
-    <string name="freq_scan_frequency_from">From (MHz)</string>
-    <string name="freq_scan_frequency_to">To (MHz)</string>
-    <string name="freq_scan_frequency_step">Step (MHz)</string>
-    <string name="freq_scan_time_step">Time step (seconds)</string>
-    <string name="freq_scan_apply_btn_title">Apply</string>
-    <string name="freq_scan_toast_frequency_range">Frequency is out of range from 35Mhz to 4.4 GHz</string>
-    <string name="freq_scan_toast_step_incorrect">Frequency step could be in the range from 0.001 to 1000 Mhz</string>
-    <string name="freq_scan_toast_time_incorrect">Time step could be in the range from 0.1 second to 1 hour</string>
-    <string name="freq_scan_toast_from_to">Value from is greater or equal to the value to</string>
+    <string name="freq_scan_main_title">Hello world!</string>
+    <string name="freq_scan_btn_apply">Apply</string>
+    <string name="freq_scan_btn_additem">Add item</string>
+    <string name="freq_scan_btn_read">Read</string>
 
 </resources>

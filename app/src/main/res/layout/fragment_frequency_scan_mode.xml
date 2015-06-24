@@ -15,11 +15,11 @@
         android:text="@string/freq_scan_main_title"
         android:textSize="18sp" />
 
-    <CheckBox
-        android:layout_width="wrap_content"
+    <ToggleButton
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/freq_scan_cycle_checkbox"
-        android:id="@+id/freqCycleCb" />
+        android:text="@string/freq_scan_btn_apply"
+        android:id="@+id/freqScanApplyBtn" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -27,79 +27,18 @@
         android:layout_height="wrap_content"
         android:baselineAligned="false">
 
-        <LinearLayout
-            android:orientation="vertical"
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:text="@string/freq_scan_btn_additem"
+            android:id="@+id/freqScanAdditemBtn" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/freq_scan_frequency_from"
-                android:id="@+id/frequencyFromTv" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="10"
-                android:id="@+id/frequencyFromEditText" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/freq_scan_frequency_step"
-                android:id="@+id/frequencyStepTv" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="10"
-                android:id="@+id/frequencySrepEditText" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="vertical"
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:text="@string/freq_scan_btn_read"
+            android:id="@+id/freqScanReadBtn" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/freq_scan_frequency_to"
-                android:id="@+id/frequencyToTv" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="10"
-                android:id="@+id/frequencyToEditText" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/freq_scan_time_step"
-                android:id="@+id/timeStepTv" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="10"
-                android:id="@+id/timeStepEditText" />
-        </LinearLayout>
     </LinearLayout>
-
-    <ToggleButton
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/freq_scan_apply_btn_title"
-        android:id="@+id/freqApplyTask"
-        android:textColor="#ff000000" />
 
 </LinearLayout>

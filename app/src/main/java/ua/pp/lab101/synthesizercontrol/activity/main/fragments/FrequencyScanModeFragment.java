@@ -13,15 +13,13 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import ua.pp.lab101.synthesizercontrol.R;
+import ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToFreqScanActivity;
+import ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToScheduleActivity;
 import ua.pp.lab101.synthesizercontrol.activity.main.IServiceDistributor;
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
@@ -29,14 +27,24 @@ import ua.pp.lab101.synthesizercontrol.service.task.Task;
 
 public class FrequencyScanModeFragment extends Fragment {
 
-    private static final String LOG_TAG = "Frequrncy scan";
+    private static final String LOG_TAG = "Frequency scan";
 
-    private EditText mFrequencyFromET;
-    private EditText mFrequencyToTE;
-    private EditText mFrequencyStepET;
-    private EditText mTimeStepET;
-    private CheckBox mCycledCheckBox;
-    private ToggleButton mApplyBtn;
+    // atribute names for map
+    public static final String ATTRIBUTE_FROM_FREQUENCY = "from frequency";
+    public static final String ATTRIBUTE_TO_FREQUENCY = "to frequency";
+    public static final String ATTRIBUTE_FREQUENCY_STEP = "frequency step";
+    public static final String ATTRIBUTE_TIME_STEP = "time step";
+
+    public static final String ATTRIBUTE_FREQUENCY_ARRAY = "frequencyArray";
+    public static final String ATTRIBUTE_TIME_ARRAY = "timeArray";
+
+    private static final int ADD_ITEM_RUN = 1;
+    private static final int READ_FILE_RUN = 2;
+    private static final int WRITE_FILE_RUN = 3;
+    //UI components
+    ToggleButton mApplyBtn;
+    Button mReadBtn;
+    Button mAddItemBtn;
 
     private BoardManagerService mService;
 
@@ -52,31 +60,38 @@ public class FrequencyScanModeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_frequency_scan_mode, container, false);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mFrequencyFromET = (EditText) getActivity().findViewById(R.id.frequencyFromEditText);
-        mFrequencyToTE = (EditText) getActivity().findViewById(R.id.frequencyToEditText);
-        mFrequencyStepET = (EditText) getActivity().findViewById(R.id.frequencySrepEditText);
-        mTimeStepET = (EditText) getActivity().findViewById(R.id.timeStepEditText);
-        mCycledCheckBox = (CheckBox) getActivity().findViewById(R.id.freqCycleCb);
-        mApplyBtn = (ToggleButton) getActivity().findViewById(R.id.freqApplyTask);
+        mApplyBtn = (ToggleButton) getActivity().findViewById(R.id.freqScanApplyBtn);
+        mApplyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                applyButtonClicked();
+            }
+        });
+        mAddItemBtn = (Button) getActivity().findViewById(R.id.freqScanAdditemBtn);
+        mAddItemBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addItemButtonClicked();
+            }
+        });
+        mReadBtn = (Button) getActivity().findViewById(R.id.freqScanReadBtn);
+        mReadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                readButtonClicked();
+            }
+        });
 
-        if (mApplyBtn != null) {
-            mApplyBtn.setOnClickListener(new View.OnClickListener() {
-                                             @Override
-                                             public void onClick(View v) {
-                                                buttonApplyPressed();
-                                             }
-                                         }
-
-            );
-        }
     }
+
+
+
 
     @Override
     public void onResume() {
@@ -88,11 +103,11 @@ public class FrequencyScanModeFragment extends Fragment {
                 Task currentTask = mService.getCurrentTask();
                 fillUiFieldsFromTask(currentTask);
                 setControlsDisabled();
-                mApplyBtn.setChecked(true);
+                //mApplyBtn.setChecked(true);
             } else {
                 mService.stopAnyWorkingTask();
                 setControlsEnabled();
-                mApplyBtn.setChecked(false);
+                //mApplyBtn.setChecked(false);
             }
         }
         IntentFilter intFilt = new IntentFilter(BoardManagerService.INTENT_TASK_DONE);
@@ -100,18 +115,7 @@ public class FrequencyScanModeFragment extends Fragment {
     }
 
     private void fillUiFieldsFromTask(Task currentTask) {
-        String frequencyFrom = String.valueOf(currentTask.getStartFrequency());
-        String frequencyTo = String.valueOf(currentTask.getFinishFrequency());
-        String frequencyStep = String.valueOf(currentTask.getFrequencyStep());
-        double timeStepValue= (double) currentTask.getTimeStep();
-        timeStepValue = timeStepValue / 1000;
-        String timeStep = String.valueOf(timeStepValue);
 
-        mFrequencyFromET.setText(frequencyFrom);
-        mFrequencyToTE.setText(frequencyTo);
-        mFrequencyStepET.setText(frequencyStep);
-        mTimeStepET.setText(timeStep);
-        mCycledCheckBox.setChecked(currentTask.getIsCycled());
     }
 
     @Override
@@ -130,105 +134,17 @@ public class FrequencyScanModeFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
-    private void buttonApplyPressed() {
-        if (mService == null) {
-            mService = getService();
-        }
-
-        if (mApplyBtn.isChecked()) {
-
-            if (mService == null) {
-                showToast("Service is dead!");
-                mApplyBtn.setChecked(false);
-                return;
-            }
-
-            if (!mService.isDeviceConnected()) {
-                showToast(getString(R.string.const_msg_no_device));
-                mApplyBtn.setChecked(false);
-                return;
-            }
-
-            double fromFrequency = Double.parseDouble(mFrequencyFromET.getText().toString());
-            double toFrequency = Double.parseDouble(mFrequencyToTE.getText().toString());
-            double frequencyStep = Double.parseDouble(mFrequencyStepET.getText().toString());
-            double timeStep = Double.parseDouble(mTimeStepET.getText().toString());
-
-            if (!checkAllValues(fromFrequency, toFrequency, frequencyStep, timeStep)){
-                mApplyBtn.setChecked(false);
-                return;
-            }
-
-            Log.d(LOG_TAG, "Task performed");
-            fromFrequency = roundValue(fromFrequency);
-            toFrequency = roundValue(toFrequency);
-            frequencyStep = roundValue(frequencyStep);
-            timeStep = roundValue(timeStep);
-            int  roundedTime = (int) (timeStep * 1000);
-            boolean cycle = mCycledCheckBox.isChecked();
-
-            Task task = new Task(fromFrequency, toFrequency, frequencyStep, roundedTime, cycle);
-            mService.performTask(task);
-            setControlsDisabled();
-        } else {
-            //stopping service
-            Log.d(LOG_TAG, "Button toggled off");
-            setControlsEnabled();
-            mService.stopAnyWorkingTask();
-        }
+    private void applyButtonClicked() {
+        showToast("Apply me");
     }
 
-    private double roundValue(double value) {
-        return new BigDecimal(value).setScale(3, RoundingMode.HALF_EVEN).doubleValue();
-    }
-    private boolean checkAllValues(double fromFrequency, double toFrequency, double frequencyStep,
-                                   double timeStep) {
-
-        if (!checkFrequencyBoundaries(fromFrequency)) {
-            showToast(getString(R.string.freq_scan_toast_frequency_range));
-            return false;
-        }
-
-        if (!checkFrequencyBoundaries(toFrequency)) {
-            showToast(getString(R.string.freq_scan_toast_frequency_range));
-            return false;
-        }
-
-        if (!checkStepValue(frequencyStep)) {
-            showToast(getString(R.string.freq_scan_toast_step_incorrect));
-            return false;
-        }
-
-        if (!checkTimeStepValue(timeStep)) {
-            showToast(getString(R.string.freq_scan_toast_time_incorrect));
-            return false;
-        }
-
-        if (!checkFromTo(fromFrequency, toFrequency)){
-            showToast(getString(R.string.freq_scan_toast_from_to));
-            return false;
-        }
-        return true;
+    private void addItemButtonClicked() {
+        Intent intent = new Intent(getActivity(), AddItemToFreqScanActivity.class);
+        startActivityForResult(intent, ADD_ITEM_RUN);
     }
 
-    private boolean checkFromTo(double fromFrequency, double toFrequency) {
-        if (fromFrequency >= toFrequency) return false;
-        return true;
-    }
-
-    private boolean checkTimeStepValue(double timeStep) {
-        if ((timeStep >= 0.01) && (timeStep <= 3600)) return true;
-        return false;
-    }
-
-    private boolean checkStepValue(double frequencyStep) {
-        if ((frequencyStep >= 0.001) && (frequencyStep <= 1000)) return true;
-        return false;
-    }
-
-    private boolean checkFrequencyBoundaries(double frequency) {
-        if ((frequency < 35) || (frequency > 4400)) return false;
-        return true;
+    private void readButtonClicked() {
+        showToast("Read me bitch!1111111");
     }
 
     private BoardManagerService getService(){
@@ -250,25 +166,54 @@ public class FrequencyScanModeFragment extends Fragment {
     }
 
     private void setControlsDisabled() {
-        mFrequencyFromET.setEnabled(false);
-        mFrequencyToTE.setEnabled(false);
-        mFrequencyStepET.setEnabled(false);
-        mTimeStepET.setEnabled(false);
-        mCycledCheckBox.setEnabled(false);
+
     }
 
     private void setControlsEnabled() {
-        mFrequencyFromET.setEnabled(true);
-        mFrequencyToTE.setEnabled(true);
-        mFrequencyStepET.setEnabled(true);
-        mTimeStepET.setEnabled(true);
-        mCycledCheckBox.setEnabled(true);
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ADD_ITEM_RUN) {
+            if (data == null) {
+                Log.e(LOG_TAG, "No data from additem");
+                return;
+            }
+
+            Log.d(LOG_TAG, "got the result from additem");
+            int runType = data.getIntExtra(AddItemToFreqScanActivity.RUN_TYPE_ID, AddItemToFreqScanActivity.ADD_RUN);
+            String fromFrequency = String.valueOf(data.getDoubleExtra(ATTRIBUTE_FROM_FREQUENCY, 0.0));
+            String toFrequency = String.valueOf(data.getDoubleExtra(ATTRIBUTE_TO_FREQUENCY, 0.0));
+            String frequencyStep = String.valueOf(data.getDoubleExtra(ATTRIBUTE_FREQUENCY_STEP, 0.0));
+            String timeStep = String.valueOf(data.getIntExtra(ATTRIBUTE_TIME_STEP, 0));
+            showToast("From frequency: " + fromFrequency + System.getProperty("line.separator") +
+            "To frequency: " + toFrequency + System.getProperty("line.separator") +
+            "Frequency step: " + frequencyStep + System.getProperty("line.separator") +
+            "Time step: " + timeStep);
+
+            if (runType == AddItemToScheduleActivity.ADD_RUN) {
+                //addDataToList(frequency, time);
+            } else if (runType == AddItemToScheduleActivity.EDIT_RUN) {
+                //editDataInList(frequency, time);
+            }
+        } else if (requestCode == READ_FILE_RUN) {
+            if (resultCode != getActivity().RESULT_OK || data == null) {
+                showToast("No data added");
+                Log.d(LOG_TAG, "read file failed");
+                return;
+            }
+//            double[] frequency = data.getDoubleArrayExtra(ATTRIBUTE_FREQUENCY_ARRAY);
+//            int[] time = data.getIntArrayExtra(ATTRIBUTE_TIME_ARRAY);
+//            fillScheduleFromArrays(frequency, time);
+
+        }
     }
 
     private final BroadcastReceiver mTaskFinishedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            mApplyBtn.setChecked(false);
+            //mApplyBtn.setChecked(false);
             setControlsEnabled();
             showToast(getString(R.string.schedule_toast_task_done));
         }

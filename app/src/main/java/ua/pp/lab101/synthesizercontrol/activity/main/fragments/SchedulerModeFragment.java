@@ -68,12 +68,11 @@ public class SchedulerModeFragment extends Fragment {
     private Map<String, Object> mScheduleEntry;
     //private View mListHeader;
 
-    private int mChamgeIndex = 0;
+    private int mChangeIndex = 0;
 
     private BoardManagerService mService;
 
     public SchedulerModeFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -295,13 +294,14 @@ public class SchedulerModeFragment extends Fragment {
             mScheduleListAdapter.notifyDataSetChanged();
             return true;
         }
+
         if (item.getItemId() == CM_EDIT_ID) {
             AdapterContextMenuInfo acmi = (AdapterContextMenuInfo) item.getMenuInfo();
-            mChamgeIndex = acmi.position - 1;
+            mChangeIndex = acmi.position - 1;
             Intent intent = new Intent(getActivity(), AddItemToScheduleActivity.class);
             intent.putExtra(AddItemToScheduleActivity.RUN_TYPE_ID, AddItemToScheduleActivity.EDIT_RUN);
-            double frequency = Double.valueOf(mScheduleData.get(mChamgeIndex).get(ATTRIBUTE_FREQUENCY).toString());
-            int time = Integer.valueOf(mScheduleData.get(mChamgeIndex).get(ATTRIBUTE_TIME).toString());
+            double frequency = Double.valueOf(mScheduleData.get(mChangeIndex).get(ATTRIBUTE_FREQUENCY).toString());
+            int time = Integer.valueOf(mScheduleData.get(mChangeIndex).get(ATTRIBUTE_TIME).toString());
             intent.putExtra(ATTRIBUTE_FREQUENCY, frequency);
             intent.putExtra(ATTRIBUTE_TIME, time);
             startActivityForResult(intent, ADD_ITEM_RUN);
@@ -337,6 +337,7 @@ public class SchedulerModeFragment extends Fragment {
 
         }
     }
+
     private void fillScheduleFromArrays(double[] frequency, int[] time) {
         if (frequency.length != time.length) {
             Log.d(LOG_TAG, "Arrays length mismatch");
@@ -354,7 +355,7 @@ public class SchedulerModeFragment extends Fragment {
     }
 
     private void editDataInList(String frequency, String time) {
-        mScheduleEntry = mScheduleData.get(mChamgeIndex);
+        mScheduleEntry = mScheduleData.get(mChangeIndex);
         mScheduleEntry.remove(ATTRIBUTE_FREQUENCY);
         mScheduleEntry.remove(ATTRIBUTE_TIME);
         mScheduleEntry.put(ATTRIBUTE_FREQUENCY, frequency);

@@ -147,9 +147,10 @@ public class MainActivity extends ActionBarActivity
             if (currentIndex == -1) {
                 fragmentTransaction.replace(R.id.fragment_container, mOperationModeFragment);
             } else {
-                showDeviceUnpluggedDialog();
-                Log.d(LOG_TAG, "No device present");
-                return;
+                /* TODO  uncomment this section after all preparation work is done*/
+//                showDeviceUnpluggedDialog();
+//                Log.d(LOG_TAG, "No device present");
+//                return;
             }
         }
 
