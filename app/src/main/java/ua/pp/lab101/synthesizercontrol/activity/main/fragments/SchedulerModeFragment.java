@@ -64,7 +64,7 @@ public class SchedulerModeFragment extends Fragment {
     private ListView mScheduleLv;
     private SimpleAdapter mScheduleListAdapter;
     private ArrayList<Map<String, Object>> mScheduleData = new ArrayList<Map<String, Object>>();
-    ;
+
     private Map<String, Object> mScheduleEntry;
     //private View mListHeader;
 

@@ -93,6 +93,7 @@ android:orientation="vertical">
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/additem_freq_scan_apply_btn_title"
-        android:id="@+id/addFreqScanApply" />
+        android:id="@+id/addFreqScanApply"
+        android:textColor="#ff000000" />
 
 </LinearLayout>

@@ -27,8 +27,8 @@
     <!--Scheduler fragment resources-->
     <string name="scheduler_mode_title">Scheduler</string>
     <string name="scheduler_btn_add_item">Add entry</string>
-    <string name="scheduler_menu_entry_delete_item">Delete entry</string>
-    <string name="scheduler_menu_entry_edit_item">Edit entry</string>
+    <string name="scheduler_menu_entry_delete_item">Delete item</string>
+    <string name="scheduler_menu_entry_edit_item">Edit item</string>
     <string name="action_stop_service">Stop service</string>
     <string name="scheduler_btn_start">PUSH ME</string>
     <string name="schedule_list_header_frequency">Frequency (Mhz)</string>
@@ -123,6 +123,7 @@
     <string name="additem_freq_scan_toast_time_incorrect">Time step could be in the range from 0.1 second to 1 hour</string>
     <string name="additem_freq_scan_toast_from_to">Value from is greater or equal to the value to</string>
     <string name="additem_title_activity_add_item_to_freq_scan">AddItemToFreqScanActivity</string>
+    <string name="additem_freq_scan_msg_parse_error">Some fields are filled incorrect. Check and try again.</string>
 
 
     <!--Frequency scan fragment-->
@@ -130,5 +131,11 @@
     <string name="freq_scan_btn_apply">Apply</string>
     <string name="freq_scan_btn_additem">Add item</string>
     <string name="freq_scan_btn_read">Read</string>
+    <string name="freq_scan_list_header_from_frequency">From (Mhz)</string>
+    <string name="freq_scan_list_header_to_frequency">To (MHz)</string>
+    <string name="freq_scan_list_header_frequency_step">Step (MHz)</string>
+    <string name="freq_scan_list_header_time_step">Time step (sec)</string>
+    <string name="freq_scan_menu_entry_delete_item">Delete item</string>
+    <string name="freq_scan_menu_entry_edit_item">Edit item</string>
 
 </resources>

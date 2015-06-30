@@ -53,10 +53,21 @@ public class AddItemToFreqScanActivity extends Activity {
     }
 
     private void buttonApplyPressed() {
-        double fromFrequency = Double.parseDouble(mFrequencyFromET.getText().toString());
-        double toFrequency = Double.parseDouble(mFrequencyToTE.getText().toString());
-        double frequencyStep = Double.parseDouble(mFrequencyStepET.getText().toString());
-        double timeStep = Double.parseDouble(mTimeStepET.getText().toString());
+        double fromFrequency;
+        double toFrequency;
+        double frequencyStep;
+        double timeStep;
+        try {
+            fromFrequency = Double.parseDouble(mFrequencyFromET.getText().toString());
+            toFrequency = Double.parseDouble(mFrequencyToTE.getText().toString());
+            frequencyStep = Double.parseDouble(mFrequencyStepET.getText().toString());
+            timeStep = Double.parseDouble(mTimeStepET.getText().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "Parse exception occurred");
+            showToast(getString(R.string.additem_freq_scan_msg_parse_error));
+            return;
+        }
 
         if (!checkAllValues(fromFrequency, toFrequency, frequencyStep, timeStep)) {
             Log.e(LOG_TAG, "Error in entered values");
@@ -71,7 +82,7 @@ public class AddItemToFreqScanActivity extends Activity {
         int roundedTime = (int) (timeStep * 1000);
 
         Intent intent = new Intent();
-        intent.putExtra(AddItemToFreqScanActivity.RUN_TYPE_ID, 0);
+        intent.putExtra(AddItemToFreqScanActivity.RUN_TYPE_ID, ADD_RUN);
         intent.putExtra(FrequencyScanModeFragment.ATTRIBUTE_FROM_FREQUENCY, fromFrequency);
         intent.putExtra(FrequencyScanModeFragment.ATTRIBUTE_TO_FREQUENCY, toFrequency);
         intent.putExtra(FrequencyScanModeFragment.ATTRIBUTE_FREQUENCY_STEP, frequencyStep);
@@ -107,10 +118,10 @@ public class AddItemToFreqScanActivity extends Activity {
             return false;
         }
 
-        if (!checkFromTo(fromFrequency, toFrequency)) {
-            showToast(getString(R.string.additem_freq_scan_toast_from_to));
-            return false;
-        }
+//        if (!checkFromTo(fromFrequency, toFrequency)) {
+//            showToast(getString(R.string.additem_freq_scan_toast_from_to));
+//            return false;
+//        }
 
         return true;
     }
