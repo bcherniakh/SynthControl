@@ -12,7 +12,8 @@
         android:id="@+id/scheduleFrequencyText"
         android:layout_weight="1"
         android:gravity="top|left"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:textSize="18sp" />
 
     <TextView
         android:layout_width="fill_parent"
@@ -21,5 +22,6 @@
         android:id="@+id/scheduleTimeText"
         android:layout_weight="1"
         android:gravity="top|left"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:textSize="18sp" />
 </LinearLayout>

@@ -7,7 +7,7 @@
     <string name="main_constant_title">Режим постійного значення</string>
     <string name="main_scheduler_title">Режим розкладу</string>
     <string name="main_dialog_device_unplugged_title">Пристрій було відключено!</string>
-    <string name="main_dialog_device_unplugged_message">Вибачте, пристрій відключено!</string>
+    <string name="main_dialog_device_unplugged_message">Вибачте, пристрій відключено</string>
     <string name="main_dialog_device_unplugged_cancel_btn">Ok!</string>
 
     <!--Constant fragment resources-->
@@ -66,9 +66,9 @@
     <string name="bms_notif_content_status_constant">постійне значення</string>
     <string name="bms_notif_content_status_schedule">рокзлад</string>
     <string name="bms_notif_content_status_freqscan">пребір частот</string>
-    <string name="bms_notif_subcont_title">Частота: </string>
+    <string name="bms_notif_subcont_title">Частота (МГц):</string>
     <string name="bms_notif_subcont_none">нема</string>
-    <string name="bms_notif_subcont_plase_tap">Будь ласка, дайте необхідний дозвіл та натисніть</string>
+    <string name="bms_notif_subcont_plase_tap">Будь ласка, надайте необхідний дозвіл та натисніть</string>
     <string name="title_activity_read_schedule">Читання розкладу</string>
 
     <!--Read data from csv file Activity resources-->
@@ -82,7 +82,7 @@
     <string name="read_toast_error_select_entry">Будь ласка, оберіть файл. Потім натисніть "Відкрити файл"</string>
     <string name="read_dialog_error_parse_error">Помилка з даними на рядку</string>
     <string name="read_dialog_error_frequency_range">Частота поза діапазоном 35 МГц - 4.4 ГГц на рядку</string>
-    <string name="read_dialog_error_time_range">Час поза діапазоном 1 мс 6 годин на рядку</string>
+    <string name="read_dialog_error_time_range">Час поза діапазоном 1 с 6 годин на рядку</string>
     <string name="read_dialog_error_frequency_step_range">Крок частоти поза діапазоном 1 КГц - 4.4 ГГц</string>
     <string name="read_dialog_error_time_step_range">Крок часу поза діапазоном 1 мс - 6 годин</string>
     <string name="read_dialog_error_file_empty">Обраний файл пустий</string>
@@ -101,7 +101,7 @@
     <string name="write_explanation_file_name">Введіть назву файла:</string>
     <string name="write_file_btn_title">Записати</string>
     <string name="write_dialog_error_no_storage">Будь ласка, перевірте доступність зовнішнього сховища та спробуйте ще</string>
-    <string name="write_dialog_error_no_folder">Папка SynthControl не знайдена на карті SD. Створеан нова папка.</string>
+    <string name="write_dialog_error_no_folder">Папка SynthControl не знайдена на карті SD. Створена нова папка.</string>
     <string name="write_toast_empty_file_name">Назву файла не задано</string>
     <string name="write_dialog_error_io_error">Помилка вводу-виводу</string>
     <string name="write_dialog_over_title">Перезаписати існуючий файл?</string>
@@ -119,7 +119,7 @@
     <string name="additem_freq_scan_frequency_from">Від (МГц)</string>
     <string name="additem_freq_scan_frequency_to">До (МГц)</string>
     <string name="additem_freq_scan_frequency_step">Крок (МГц)</string>
-    <string name="additem_freq_scan_time_step">Кроч час (секунди)</string>
+    <string name="additem_freq_scan_time_step">Крок час (секунди)</string>
     <string name="additem_freq_scan_apply_btn_title">Застосувати</string>
     <string name="additem_freq_scan_toast_frequency_range">Частота поза діапазоном 35 МГц - 4.4 ГГц</string>
     <string name="additem_freq_scan_toast_step_incorrect">Крок частоти поза діапазоном 1 КГц - 1 ГГц</string>

@@ -143,6 +143,7 @@ public class SchedulerModeFragment extends Fragment {
             if (currentStatus.equals(ServiceStatus.SCHEDULE_MODE)) {
                 Task currentTask = mService.getCurrentTask();
                 fillScheduleFromArrays(currentTask.getFrequencyArray(), currentTask.getTimeArray());
+                mCycleCheckBox.setChecked(currentTask.getIsCycled());
                 setControlsDisabled();
                 mRunBtn.setChecked(true);
             } else {

@@ -129,7 +129,7 @@ public class ConstantModeFragment extends Fragment {
             double frequencyValue = 0;
             try {
                 frequencyValue = Double.parseDouble(mFrequencyValue.getText().toString());
-                frequencyValue = new BigDecimal(frequencyValue).setScale(3, RoundingMode.UP).doubleValue();
+                frequencyValue = new BigDecimal(frequencyValue).setScale(3, RoundingMode.HALF_EVEN).doubleValue();
             } catch (Exception parseException) {
                 Log.e(LOG_TAG, "Parse double error occurred");
                 showToast(getString(R.string.const_msg_frequency_input_err));

@@ -30,10 +30,10 @@
     <string name="action_stop_service">Остановить сервис</string>
     <string name="scheduler_btn_start">Применить</string>
     <string name="schedule_list_header_frequency">Частота (МГц)</string>
-    <string name="schedule_list_header_time">Время (секунды)</string>
+    <string name="schedule_list_header_time">Время (с)</string>
     <string name="scheduler_btn_read_file">Прочитать</string>
     <string name="scheduler_btn_write_file">Записать</string>
-    <string name="scheduler_btn_hint_read_file">Нажмите для чтения из файла</string>
+    <string name="scheduler_btn_hint_read_file">Нажмите для чтения расписания задач из файла</string>
     <string name="scheduler_toast_err_schedule_empty">Список задач пуст</string>
     <string name="scheduler_checkbox_title">зациклить</string>
     <string name="schedule_toast_task_done">Задача выполнена!</string>
@@ -52,8 +52,8 @@
     <string name="additem_title_minutes">минуты:</string>
     <string name="additem_title_seconds">секунды:</string>
     <string name="additem_btn_apply">Применить</string>
-    <string name="additem_msg_frequency_incorrect">Задайте значение в интервале от 35 МГц до 4.4 ГГц</string>
-    <string name="additem_msg_time_incorrect">Задайте значение времени в интервале от 1 с до 6 часов</string>
+    <string name="additem_msg_frequency_incorrect">Задайте значение в интервале 35 МГц - 4.4 ГГц</string>
+    <string name="additem_msg_time_incorrect">Задайте значение времени в интервале 1 с - 6 часов</string>
     <string name="additem_msg_parse_error">Некоторые поля заполнены некорректно</string>
 
     <!--BoardManagerService service resourses-->
@@ -66,7 +66,7 @@
     <string name="bms_notif_content_status_constant">постоянное значений</string>
     <string name="bms_notif_content_status_schedule">расписание</string>
     <string name="bms_notif_content_status_freqscan">перебор частот</string>
-    <string name="bms_notif_subcont_title">Частота: </string>
+    <string name="bms_notif_subcont_title">Частота (МГц):</string>
     <string name="bms_notif_subcont_none">нет</string>
     <string name="bms_notif_subcont_plase_tap">Пожалуйста, предоставьте необходимые разрешения и нажмите для подключения</string>
     <string name="title_activity_read_schedule">Чтение расписания</string>
@@ -80,9 +80,9 @@
     <string name="read_dialog_error_no_folder">Папка не найдена на карте SD</string>
     <string name="read_dialog_error_no_storage_okbutton">Ok</string>
     <string name="read_toast_error_select_entry">Пожалуйста, выберите файл и нажмите "Открыть" </string>
-    <string name="read_dialog_error_parse_error">Ошибка данных на строке </string>
+    <string name="read_dialog_error_parse_error">Ошибка в данных на строке</string>
     <string name="read_dialog_error_frequency_range">Частота вне диапазона 35 МГц - 4.4 ГГц на строке</string>
-    <string name="read_dialog_error_time_range">Время вне диапазона 1 мс  6 часов на строке</string>
+    <string name="read_dialog_error_time_range">Время вне диапазона 1 с  6 часов на строке</string>
     <string name="read_dialog_error_frequency_step_range">Шаг частоты вне диапазона  1 КГц - 4.4 ГГц</string>
     <string name="read_dialog_error_time_step_range">Шаг времени вне диапазона 1 мс - 6 часов</string>
     <string name="read_dialog_error_file_empty">Выбраный файл пуст</string>

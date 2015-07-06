@@ -123,7 +123,7 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
             return;
         }
 
-        mFrequencyValue = new BigDecimal(mFrequencyValue).setScale(3, RoundingMode.UP).doubleValue();
+        mFrequencyValue = new BigDecimal(mFrequencyValue).setScale(3, RoundingMode.HALF_EVEN).doubleValue();
         intent.putExtra(AddItemToScheduleActivity.RUN_TYPE_ID, mRunType);
         intent.putExtra(SchedulerModeFragment.ATTRIBUTE_TIME, mTimeInSecondsValue);
         intent.putExtra(SchedulerModeFragment.ATTRIBUTE_FREQUENCY, mFrequencyValue);

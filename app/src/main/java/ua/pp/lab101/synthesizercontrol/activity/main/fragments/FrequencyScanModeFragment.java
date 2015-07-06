@@ -149,6 +149,7 @@ public class FrequencyScanModeFragment extends Fragment {
             if (currentStatus.equals(ServiceStatus.FREQUENCY_SCAN_MODE)) {
                 Task currentTask = mService.getCurrentTask();
                 fillUiFieldsFromTask(currentTask);
+                mCycleCheckBox.setChecked(currentTask.getIsCycled());
                 setControlsDisabled();
                 mApplyBtn.setChecked(true);
             } else {
@@ -162,7 +163,27 @@ public class FrequencyScanModeFragment extends Fragment {
     }
 
     private void fillUiFieldsFromTask(Task currentTask) {
+        double[] fromFrequncy = currentTask.getStartFrequency();
+        double[] toFrequency = currentTask.getFinishFrequency();
+        double[] frequencyStep = currentTask.getFrequencyStep();
+        int[] timeStep = currentTask.getTimeStep();
 
+        if (fromFrequncy == null || toFrequency == null || frequencyStep == null || timeStep == null ) {
+            Log.e(LOG_TAG, "Null pointer");
+            return;
+        }
+
+        mFreqScanData.clear();
+
+        for (int i = 0; i < fromFrequncy.length; i++) {
+            Map<String, Object> newFreqScanListItem = new HashMap<String, Object>();
+            newFreqScanListItem.put(ATTRIBUTE_FROM_FREQUENCY, fromFrequncy[i]);
+            newFreqScanListItem.put(ATTRIBUTE_TO_FREQUENCY, toFrequency[i]);
+            newFreqScanListItem.put(ATTRIBUTE_FREQUENCY_STEP, frequencyStep[i]);
+            newFreqScanListItem.put(ATTRIBUTE_TIME_STEP,  ( (double) timeStep[i]) / 1000);
+            mFreqScanData.add(newFreqScanListItem);
+        }
+        mFreqScanListAdapter.notifyDataSetChanged();
     }
 
     @Override
