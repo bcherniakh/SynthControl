@@ -14,10 +14,10 @@ public class Task {
     private double mConstantFrequency;
     private double[] frequencyArray;
     private int[] timeArray;
-    private double mStartFrequency;
-    private double mFinishFrequency;
-    private double mFrequencyStep;
-    private int mTimeStep;
+    private double[] mStartFrequency;
+    private double[] mFinishFrequency;
+    private double[] mFrequencyStep;
+    private int[] mTimeStep;
     private boolean mIsCycled;
 
 
@@ -47,22 +47,23 @@ public class Task {
 
     /**
      * Constructor for creation frequency scan task.
-     * @param startFrequency is a start frequency in MHz. Should not be negative.
-     * @param finishFrequency is a finish frequency in MHz. Should not be negative.
-     * @param frequencyStep is a frequency step in MHz. Should be more than zero
+     * @param startFrequency is a start frequency array in MHz. Should not be negative.
+     * @param finishFrequency is a finish frequency array in MHz. Should not be negative.
+     * @param frequencyStep is a frequency step array in MHz. Should be more than zero
      *                      or be more than start || stop frequency.
-     * @param timeStep is a time step in seconds. Should not be more than zero.
+     * @param timeStep is a time step array in seconds. Should not be more than zero.
      * @param isCycled is flag that tells whether the task should be cycled.
      */
-    public Task(double startFrequency, double finishFrequency, double frequencyStep, int timeStep, boolean isCycled) {
-        if ((startFrequency < 0) || (finishFrequency < 0) ||
-                (frequencyStep <= 0) || (timeStep <=0) )
-            throw new IllegalArgumentException("Incorrect parameters");
+    public Task(double[] startFrequency, double[] finishFrequency, double[] frequencyStep, double[] timeStep, boolean isCycled) {
         mTaskType = TaskType.FREQUENCY_SCAN_MODE;
-        mStartFrequency = startFrequency;
-        mFinishFrequency = finishFrequency;
-        mFrequencyStep = frequencyStep;
-        mTimeStep = timeStep;
+        mStartFrequency =  Arrays.copyOf(startFrequency, startFrequency.length);
+        mFinishFrequency = Arrays.copyOf(finishFrequency, finishFrequency.length);
+        mFrequencyStep = Arrays.copyOf(frequencyStep, frequencyStep.length);
+        mTimeStep = new int[timeStep.length];
+
+        for (int i =0; i < mTimeStep.length; i++) {
+            mTimeStep[i] = (int) (timeStep[i]*1000);
+        }
         mIsCycled = isCycled;
     }
 
@@ -110,7 +111,7 @@ public class Task {
      * Returns the start frequency value in MHz for frequency scan mode.
      * @return frequency value in MHz
      */
-    public double getStartFrequency() {
+    public double[] getStartFrequency() {
         return mStartFrequency;
     }
 
@@ -118,7 +119,7 @@ public class Task {
      * Returns the finish frequency value in MHz for frequency scan mode.
      * @return frequency value in MHz
      */
-    public double getFinishFrequency() {
+    public double[] getFinishFrequency() {
         return mFinishFrequency;
     }
 
@@ -126,7 +127,7 @@ public class Task {
      * Returns the value of the step in MHz for frequency scan mode.
      * @return value of the frequency step in MHz
      */
-    public double getFrequencyStep() {
+    public double[] getFrequencyStep() {
         return mFrequencyStep;
     }
 
@@ -134,7 +135,7 @@ public class Task {
      * Returns the cycle flag for both scan and schedule modes.
      * @return cycle flag
      */
-    public int getTimeStep() {
+    public int[] getTimeStep() {
         return mTimeStep;
     }
 

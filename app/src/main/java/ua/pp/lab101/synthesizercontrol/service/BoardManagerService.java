@@ -1,5 +1,7 @@
 package ua.pp.lab101.synthesizercontrol.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -250,7 +252,8 @@ public class BoardManagerService extends Service {
         changeServiceStatus(ServiceStatus.SCHEDULE_MODE);
     }
 
-    private void performFrequencyScanTask(double startFrequency, double finishFrequency, double frequencyStep, int timeStep, boolean isCycled) {
+    private void performFrequencyScanTask(double[] startFrequency, double[] finishFrequency,
+                                          double[] frequencyStep, int[] timeStep, boolean isCycled) {
         double[] frequency = getFrequencyArray(startFrequency, finishFrequency, frequencyStep);
         int[] time = getTimeArray(startFrequency, finishFrequency, frequencyStep, timeStep);
         TaskPerformer performer = new TaskPerformer(frequency, time, isCycled);
@@ -259,25 +262,87 @@ public class BoardManagerService extends Service {
         changeServiceStatus(ServiceStatus.FREQUENCY_SCAN_MODE);
     }
 
-    private int[] getTimeArray(double startFrequency, double finishFrequency, double frequencyStep, int timeStep) {
-        double range = finishFrequency - startFrequency;
-        int entries = (int) (range / frequencyStep) + 1;
-        int[] time = new int[entries];
-        for (int i = 0; i < entries; i++) {
-            time[i] = timeStep;
+    private int[] getTimeArray(double[] fromFrequencyArray, double[] toFrequencyArray, double[] frequencyStepArray, int[] timeStepArray) {
+        ArrayList<Integer> time = new ArrayList<Integer>();
+
+        for (int i = 0; i < fromFrequencyArray.length; i++) {
+            double startFrequency = 0;
+            double finishFrequency = 0;
+            if (fromFrequencyArray[i] < toFrequencyArray[i]) {
+                startFrequency = fromFrequencyArray[i];
+                finishFrequency = toFrequencyArray[i];
+            } else {
+                startFrequency = toFrequencyArray[i];
+                finishFrequency = fromFrequencyArray[i];
+            }
+
+            double frequencyStep = frequencyStepArray[i];
+            double range = finishFrequency - startFrequency;
+            int items = (int) (range / frequencyStep) + 1;
+            int[] timeInItem = new int[items];
+
+            for (int j = 0; j < items; j++) {
+                timeInItem[j] = timeStepArray[i];
+            }
+            for (int j = 0; j < items; j++) {
+                time.add(timeInItem[j]);
+            }
         }
-        return time;
+        return getTimeAsPrimitive(time);
     }
 
-    private double[] getFrequencyArray(double startFrequency, double finishFrequency, double frequencyStep) {
-        double range = finishFrequency - startFrequency;
-        int entries = (int) (range / frequencyStep) + 1;
-        double[] frequency = new double[entries];
-        frequency[0] = startFrequency;
-        for (int i = 1; i < entries; i++) {
-            frequency[i] = frequency[i - 1] + frequencyStep;
+    private int[] getTimeAsPrimitive(ArrayList<Integer> timeAsCollection) {
+        int[] primitives = new int[timeAsCollection.size()];
+        for (int i = 0; i < primitives.length; i++) {
+            primitives[i] = timeAsCollection.get(i).intValue();
         }
-        return frequency;
+        return primitives;
+    }
+
+
+    private double[] getFrequencyArray(double[] fromFrequencyArray, double[] toFrequencyArray, double[] frequencyStepArray) {
+        ArrayList<Double> frequency = new ArrayList<Double>();
+        for (int i = 0; i < fromFrequencyArray.length; i++) {
+            double startFrequency = 0;
+            double finishFrequency = 0;
+            if (fromFrequencyArray[i] < toFrequencyArray[i]) {
+                startFrequency = fromFrequencyArray[i];
+                finishFrequency = toFrequencyArray[i];
+            } else {
+                startFrequency = toFrequencyArray[i];
+                finishFrequency = fromFrequencyArray[i];
+            }
+
+            double frequencyStep = frequencyStepArray[i];
+            double range = finishFrequency - startFrequency;
+            int items = (int) (range / frequencyStep) + 1;
+            double[] frequencyInItem = new double[items];
+
+            if (fromFrequencyArray[i] < toFrequencyArray[i]) {
+            frequencyInItem[0] = startFrequency;
+            for (int j = 1; j < items; j++) {
+                frequencyInItem[j] = frequencyInItem[j - 1] + frequencyStep;
+                }
+            } else {
+                frequencyInItem[0] = finishFrequency;
+                for (int j = 1; j < items; j++) {
+                    frequencyInItem[j] = frequencyInItem[j - 1] - frequencyStep;
+                }
+            }
+
+            for (int j = 0; j < frequencyInItem.length; j++) {
+                frequency.add(frequencyInItem[j]);
+            }
+        }
+        return getFrequencyAsPrimitive(frequency);
+    }
+
+    private double[] getFrequencyAsPrimitive(ArrayList<Double> frequencyAsCollection) {
+        double[] primitives = new double[frequencyAsCollection.size()];
+        for (int i = 0; i < primitives.length; i++) {
+            primitives[i] = frequencyAsCollection.get(i).doubleValue();
+        }
+        return primitives;
     }
 
     private void setFrequencyOnTheDevice(double frequencyValue) {
@@ -312,7 +377,7 @@ public class BoardManagerService extends Service {
                         interrupted = true;
                         break;
                     }
-                    mCurrentFrequency = frequency[i];
+                    mCurrentFrequency = roundValue(frequency[i]);
                     changeFrequencyVisualization();
                     writeData(adf.setFrequency(frequency[i]));
                     writeData(adf.turnOnDevice());
@@ -329,6 +394,11 @@ public class BoardManagerService extends Service {
             while (isCycled && !interrupted);
             stop();
         }
+
+        private double roundValue(double value) {
+            return new BigDecimal(value).setScale(3, RoundingMode.HALF_EVEN).doubleValue();
+        }
+
         void stop() {
             Log.d(LOG_TAG, "Task ends");
             shutdownDevice();

@@ -5,15 +5,13 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Environment;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.opencsv.CSVWriter;
@@ -26,39 +24,62 @@ import java.util.LinkedList;
 import java.util.List;
 
 import ua.pp.lab101.synthesizercontrol.R;
+import ua.pp.lab101.synthesizercontrol.activity.main.fragments.FrequencyScanModeFragment;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.SchedulerModeFragment;
 
-public class WriteScheduleActivity extends Activity implements View.OnClickListener {
+public class WriteDataToCSVFileActivity extends Activity implements View.OnClickListener {
+
+    public static final String WRITE_FILE_TYPE_ID = "write_file_type";
+    public static final int WRITE_SCHEDULE_FILE = 0;
+    public static final int WRITE_FREQUENCY_SCAN_FILE = 1;
 
     private static final String LOG_TAG = "WriteAct";
 
     private Button mWriteBtn = null;
     private EditText mFileName = null;
+    private TextView mExplanationMainnTextView = null;
+    private TextView mExplanationDirectoryTextView = null;
 
+    private int mWriteTypeID;
     private String mDirectoryPath = null;
     private ArrayList<String> mFileNames = new ArrayList<>();
     private final String mDirectoryName = "SynthControl";
+    private final String mScheduleDirectoryName = "Schedule";
+    private final String mFrequencyScanDirectoryName = "FrequencyScan";
 
     private boolean mErrorOccurred = false;
     private String[] mFrequencyValues = null;
     private String[] mTimeValues = null;
 
+    private String[] mFromFrequency = null;
+    private String[] mToFrequency = null;
+    private String[] mFrequencyStep = null;
+    private String[] mTimeStep = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_write_schedule);
-        Intent intent = getIntent();
-        mFrequencyValues = intent.getStringArrayExtra(SchedulerModeFragment.ATTRIBUTE_FREQUENCY_ARRAY);
-        mTimeValues = intent.getStringArrayExtra(SchedulerModeFragment.ATTRIBUTE_TIME_ARRAY);
-        if (mFrequencyValues.length == 0 || mTimeValues.length == 0) {
-            Log.d(LOG_TAG, "An error occurred. No data in array");
-            notifyAboutError(getString(R.string.write_dialog_error_zero_array), true);
-        }
-        mWriteBtn = (Button) findViewById(R.id.writeToFileBtn);
+        setContentView(R.layout.activity_write_csv_file);
+        mWriteBtn = (Button) findViewById(R.id.writeFileApplyBtn);
         mWriteBtn.setOnClickListener(this);
+        mFileName = (EditText) findViewById(R.id.writeFileFileNameEt);
+        mExplanationMainnTextView = (TextView) findViewById(R.id.writeFileMainTitleText);
+        mExplanationDirectoryTextView = (TextView) findViewById(R.id.writeFileExplanationText);
+        Intent intent = getIntent();
+        mWriteTypeID = intent.getIntExtra(WRITE_FILE_TYPE_ID, WRITE_SCHEDULE_FILE);
 
-        mFileName = (EditText) findViewById(R.id.fileNameEt);
-    }
+        if (mWriteTypeID == WRITE_SCHEDULE_FILE) {
+            mExplanationMainnTextView.setText(R.string.write_schedule_explanation_title);
+            mExplanationDirectoryTextView.setText(R.string.write_schedule_explanation_directory);
+        } else if (mWriteTypeID == WRITE_FREQUENCY_SCAN_FILE){
+            mExplanationMainnTextView.setText(R.string.write_freq_scan_explanation_title);
+            mExplanationDirectoryTextView.setText(R.string.write_freq_scan_explanation_directory);
+        }
+
+        getDataFromIntent(intent);
+        }
+
+
 
     @Override
     public void onStart() {
@@ -89,6 +110,40 @@ public class WriteScheduleActivity extends Activity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         writeData(false);
+    }
+
+    private void getDataFromIntent(Intent intent) {
+        if (mWriteTypeID == WRITE_SCHEDULE_FILE) {
+            mFrequencyValues = intent.getStringArrayExtra(SchedulerModeFragment.ATTRIBUTE_FREQUENCY_ARRAY);
+            mTimeValues = intent.getStringArrayExtra(SchedulerModeFragment.ATTRIBUTE_TIME_ARRAY);
+
+            if (mFrequencyValues == null || mTimeValues == null) {
+                Log.d(LOG_TAG, "An error occurred. No data in array");
+                notifyAboutError(getString(R.string.write_dialog_error_zero_array), true);
+            }
+
+            if (mFrequencyValues.length == 0 || mTimeValues.length == 0) {
+                Log.d(LOG_TAG, "An error occurred. No data in array");
+                notifyAboutError(getString(R.string.write_dialog_error_zero_array), true);
+            }
+        } else if (mWriteTypeID == WRITE_FREQUENCY_SCAN_FILE) {
+            mFromFrequency = intent.getStringArrayExtra(FrequencyScanModeFragment.ATTRIBUTE_FROM_FREQUENCY_ARRAY);
+            mToFrequency = intent.getStringArrayExtra(FrequencyScanModeFragment.ATTRIBUTE_TO_FREQUENCY_ARRAY);
+            mFrequencyStep = intent.getStringArrayExtra(FrequencyScanModeFragment.ATTRIBUTE_FREQUENCY_STEP_ARRAY);
+            mTimeStep = intent.getStringArrayExtra(FrequencyScanModeFragment.ATTRIBUTE_TIME_STEP_ARRAY);
+
+            if (mFromFrequency == null ||mToFrequency == null || mFrequencyStep == null ||
+                    mTimeStep == null) {
+                Log.d(LOG_TAG, "An error occurred. No data in array");
+                notifyAboutError(getString(R.string.write_dialog_error_zero_array), true);
+            }
+
+            if (mFromFrequency.length == 0 ||mToFrequency.length == 0 || mFrequencyStep.length ==0 ||
+                    mTimeStep.length == 0) {
+                Log.d(LOG_TAG, "An error occurred. No data in array");
+                notifyAboutError(getString(R.string.write_dialog_error_zero_array), true);
+            }
+         }
     }
 
     private void writeData(boolean overwrite) {
@@ -136,14 +191,32 @@ public class WriteScheduleActivity extends Activity implements View.OnClickListe
     }
 
     private List<String[]> getData() {
+
+        if (mWriteTypeID == WRITE_SCHEDULE_FILE) {
+            return getScheduleData();
+        } else if (mWriteTypeID == WRITE_FREQUENCY_SCAN_FILE) {
+            return getFrequencyScanData();
+        }
+        return null;
+    }
+
+    private List<String[]> getScheduleData() {
         List<String[]> data = new LinkedList<>();
         for (int i = 0; i < mFrequencyValues.length; i++) {
-            data.add(createNewLine(i));
+            data.add(createNewScheduleLine(i));
         }
         return data;
     }
 
-    private String[] createNewLine(int i) {
+    private List<String[]> getFrequencyScanData() {
+        List<String[]> data = new LinkedList<>();
+        for (int i = 0; i < mFromFrequency.length; i++) {
+            data.add(createNewFrequencyScanLine(i));
+        }
+        return data;
+    }
+
+    private String[] createNewScheduleLine(int i) {
         String[] newLine = new String[4];
         newLine[0] = mFrequencyValues[i];
         newLine[1] = getHoursFromTime(i);
@@ -151,6 +224,16 @@ public class WriteScheduleActivity extends Activity implements View.OnClickListe
         newLine[3] = getSecondsFromTime(i);
         return  newLine;
     }
+
+    private String[] createNewFrequencyScanLine(int i) {
+        String[] newLine = new String[4];
+        newLine[0] = mFromFrequency[i];
+        newLine[1] = mToFrequency[i];
+        newLine[2] = mFrequencyStep[i];
+        newLine[3] = mTimeStep[i];
+        return  newLine;
+    }
+
     private String getSecondsFromTime(int i) {
         int seconds = 0;
         int timeInSeconds = Integer.parseInt(mTimeValues[i]);
@@ -221,10 +304,10 @@ public class WriteScheduleActivity extends Activity implements View.OnClickListe
         builder.setPositiveButton(R.string.write_dialog_over_btn_positive,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                    writeData(true);
-                    dialog.cancel();
-            }
-        });
+                        writeData(true);
+                        dialog.cancel();
+                    }
+                });
 
         builder.setNegativeButton(R.string.write_dialog_over_btn_negative,
                 new DialogInterface.OnClickListener() {
@@ -246,9 +329,15 @@ public class WriteScheduleActivity extends Activity implements View.OnClickListe
             return;
         }
 
-        mDirectoryPath = Environment.getExternalStorageDirectory() + File.separator + mDirectoryName;
-        File taskFileDirectory = new File(mDirectoryPath);
+        if (mWriteTypeID == WRITE_SCHEDULE_FILE) {
+            mDirectoryPath = Environment.getExternalStorageDirectory() + File.separator +
+                    mDirectoryName + File.separator + mScheduleDirectoryName;
+        } else if (mWriteTypeID == WRITE_FREQUENCY_SCAN_FILE) {
+            mDirectoryPath = Environment.getExternalStorageDirectory() + File.separator +
+                    mDirectoryName + File.separator + mFrequencyScanDirectoryName;
+        }
 
+        File taskFileDirectory = new File(mDirectoryPath);
         boolean directoryAvailable = taskFileDirectory.exists() && taskFileDirectory.isDirectory();
         if (directoryAvailable) {
             Log.d(LOG_TAG, "Directory exists");

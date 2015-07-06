@@ -23,14 +23,16 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import org.apache.http.ReasonPhraseCatalog;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToScheduleActivity;
 import ua.pp.lab101.synthesizercontrol.R;
-import ua.pp.lab101.synthesizercontrol.activity.accessory.ReadScheduleActivity;
-import ua.pp.lab101.synthesizercontrol.activity.accessory.WriteScheduleActivity;
+import ua.pp.lab101.synthesizercontrol.activity.accessory.ReadDataFromCSVFileActivity;
+import ua.pp.lab101.synthesizercontrol.activity.accessory.WriteDataToCSVFileActivity;
 import ua.pp.lab101.synthesizercontrol.activity.main.IServiceDistributor;
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
@@ -48,9 +50,9 @@ public class SchedulerModeFragment extends Fragment {
     private CheckBox mCycleCheckBox = null;
     private static final int CM_DELETE_ID = 1;
     private static final int CM_EDIT_ID = 2;
-    private static final int ADD_ITEM_RUN = 1;
-    private static final int READ_FILE_RUN = 2;
-    private static final int WRITE_FILE_RUN = 3;
+    private static final int ADD_ITEM_REQUEST = 1;
+    private static final int READ_FILE_REQUEST = 2;
+    private static final int WRITE_FILE_REQUEST = 3;
 
 
 
@@ -93,39 +95,39 @@ public class SchedulerModeFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mAddBtn = (Button) getActivity().findViewById(R.id.addItemBtn);
+        mAddBtn = (Button) getActivity().findViewById(R.id.scheduleAddItemBtn);
         mAddBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onAddItemClick();
             }
         });
-        mReadBtn = (Button) getActivity().findViewById(R.id.readFileBtn);
+        mReadBtn = (Button) getActivity().findViewById(R.id.scheduleReadFileBtn);
         mReadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onReadBtnClick();
             }
         });
-        mWriteBtn = (Button) getActivity().findViewById(R.id.writeFileBtn);
+        mWriteBtn = (Button) getActivity().findViewById(R.id.scheduleWriteFileBtn);
         mWriteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onWriteBtnClick();
             }
         });
-        mRunBtn = (ToggleButton) getActivity().findViewById(R.id.startProgramBtn);
+        mRunBtn = (ToggleButton) getActivity().findViewById(R.id.scheduleApplyBtn);
         mRunBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onRunButtonClicked();
             }
         });
-        mCycleCheckBox = (CheckBox) getActivity().findViewById(R.id.cycleTaskCb);
+        mCycleCheckBox = (CheckBox) getActivity().findViewById(R.id.scheduleCycleTaskCb);
         String[] from = {ATTRIBUTE_FREQUENCY, ATTRIBUTE_TIME};
         int[] to = {R.id.scheduleFrequencyText, R.id.scheduleTimeText};
         mScheduleListAdapter = new SimpleAdapter(getActivity(), mScheduleData, R.layout.list_item_schedule_mode_task, from, to);
-        mScheduleLv = (ListView) getActivity().findViewById(R.id.scheduleList);
+        mScheduleLv = (ListView) getActivity().findViewById(R.id.scheduleTaskLv);
         View v = getActivity().getLayoutInflater().inflate(R.layout.list_header_schedule_mode_task, null);
         mScheduleLv.addHeaderView(v, "", false);
         mScheduleLv.setAdapter(mScheduleListAdapter);
@@ -201,7 +203,6 @@ public class SchedulerModeFragment extends Fragment {
             double[] frequency = getFrequencyValues();
             int[] time = getTimeValues();
             Task task = new Task(frequency, time, cycle);
-            Log.d(LOG_TAG, String.valueOf(cycle));
             mService.performTask(task);
             setControlsDisabled();
         } else {
@@ -249,6 +250,7 @@ public class SchedulerModeFragment extends Fragment {
             showToast(getString(R.string.scheduler_toast_err_schedule_empty));
             return;
         }
+
         int arraySize = mScheduleData.size();
         String[] frequencyValues = new String[arraySize];
         String[] timeValues = new String[arraySize];
@@ -257,20 +259,22 @@ public class SchedulerModeFragment extends Fragment {
             timeValues[i] = mScheduleData.get(i).get(ATTRIBUTE_TIME).toString();
         }
 
-        Intent intent = new Intent(getActivity(), WriteScheduleActivity.class);
+        Intent intent = new Intent(getActivity(), WriteDataToCSVFileActivity.class);
+        intent.putExtra(WriteDataToCSVFileActivity.WRITE_FILE_TYPE_ID, WriteDataToCSVFileActivity.WRITE_SCHEDULE_FILE);
         intent.putExtra(ATTRIBUTE_FREQUENCY_ARRAY, frequencyValues);
         intent.putExtra(ATTRIBUTE_TIME_ARRAY, timeValues);
-        startActivityForResult(intent, WRITE_FILE_RUN);
+        startActivityForResult(intent, WRITE_FILE_REQUEST);
     }
 
     private void onReadBtnClick() {
-        Intent intent = new Intent(getActivity(), ReadScheduleActivity.class);
-        startActivityForResult(intent, READ_FILE_RUN);
+        Intent intent = new Intent(getActivity(), ReadDataFromCSVFileActivity.class);
+        intent.putExtra(ReadDataFromCSVFileActivity.READ_FILE_TYPE_ID, ReadDataFromCSVFileActivity.READ_SCHEDULE_FILE);
+        startActivityForResult(intent, READ_FILE_REQUEST);
     }
 
-    public void onAddItemClick() {
+    private void onAddItemClick() {
         Intent intent = new Intent(getActivity(), AddItemToScheduleActivity.class);
-        startActivityForResult(intent, ADD_ITEM_RUN);
+        startActivityForResult(intent, ADD_ITEM_REQUEST);
     }
 
     public void onCreateContextMenu(ContextMenu menu, View v,
@@ -304,14 +308,14 @@ public class SchedulerModeFragment extends Fragment {
             int time = Integer.valueOf(mScheduleData.get(mChangeIndex).get(ATTRIBUTE_TIME).toString());
             intent.putExtra(ATTRIBUTE_FREQUENCY, frequency);
             intent.putExtra(ATTRIBUTE_TIME, time);
-            startActivityForResult(intent, ADD_ITEM_RUN);
+            startActivityForResult(intent, ADD_ITEM_REQUEST);
         }
         return super.onContextItemSelected(item);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == ADD_ITEM_RUN) {
+        if (requestCode == ADD_ITEM_REQUEST) {
             if (data == null) {
                 return;
             }
@@ -324,7 +328,7 @@ public class SchedulerModeFragment extends Fragment {
             } else if (runType == AddItemToScheduleActivity.EDIT_RUN) {
                 editDataInList(frequency, time);
             }
-        } else if (requestCode == READ_FILE_RUN) {
+        } else if (requestCode == READ_FILE_REQUEST) {
             if (resultCode != getActivity().RESULT_OK || data == null) {
                 showToast("No data added");
                 Log.d(LOG_TAG, "read file failed");

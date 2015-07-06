@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
@@ -29,6 +30,8 @@ import java.util.Map;
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToFreqScanActivity;
 import ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToScheduleActivity;
+import ua.pp.lab101.synthesizercontrol.activity.accessory.ReadDataFromCSVFileActivity;
+import ua.pp.lab101.synthesizercontrol.activity.accessory.WriteDataToCSVFileActivity;
 import ua.pp.lab101.synthesizercontrol.activity.main.IServiceDistributor;
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
@@ -44,12 +47,14 @@ public class FrequencyScanModeFragment extends Fragment {
     public static final String ATTRIBUTE_FREQUENCY_STEP = "frequency step";
     public static final String ATTRIBUTE_TIME_STEP = "time step";
 
-    public static final String ATTRIBUTE_FREQUENCY_ARRAY = "frequencyArray";
-    public static final String ATTRIBUTE_TIME_ARRAY = "timeArray";
+    public static final String ATTRIBUTE_FROM_FREQUENCY_ARRAY = "fromFrequency";
+    public static final String ATTRIBUTE_TO_FREQUENCY_ARRAY = "toFrequency";
+    public static final String ATTRIBUTE_FREQUENCY_STEP_ARRAY = "frequencyStep";
+    public static final String ATTRIBUTE_TIME_STEP_ARRAY = "timeStepArray";
 
-    public static final int ADD_ITEM_RUN = 1;
-    private static final int READ_FILE_RUN = 2;
-    private static final int WRITE_FILE_RUN = 3;
+    public static final int ADD_ITEM_REQUEST = 1488;
+    private static final int READ_FILE_REQUEST = 2488;
+    private static final int WRITE_FILE_REQUEST = 3488;
 
     private static final int CM_DELETE_ID = 1;
     private static final int CM_EDIT_ID = 2;
@@ -58,6 +63,8 @@ public class FrequencyScanModeFragment extends Fragment {
     private ToggleButton mApplyBtn;
     private Button mReadBtn;
     private Button mAddItemBtn;
+    private Button mWriteBtn;
+    private CheckBox mCycleCheckBox = null;
 
     private ListView mFreqScanLv;
     private SimpleAdapter mFreqScanListAdapter;
@@ -89,24 +96,32 @@ public class FrequencyScanModeFragment extends Fragment {
         mApplyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                applyButtonClicked();
+                onApplyButtonClick();
             }
         });
-        mAddItemBtn = (Button) getActivity().findViewById(R.id.freqScanAdditemBtn);
+        mAddItemBtn = (Button) getActivity().findViewById(R.id.freqScanAddItemBtn);
         mAddItemBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addItemButtonClicked();
+                onAddItemButtonClick();
             }
         });
-        mReadBtn = (Button) getActivity().findViewById(R.id.freqScanReadBtn);
+        mReadBtn = (Button) getActivity().findViewById(R.id.freqScanReadFileBtn);
         mReadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                readButtonClicked();
+                onReadFileButtonClick();
+            }
+        });
+        mWriteBtn = (Button) getActivity().findViewById(R.id.freqScanWriteFileBtn);
+        mWriteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onWriteFileButtonClick();
             }
         });
         mFreqScanLv = (ListView) getActivity().findViewById(R.id.freqScanDataLv);
+        mCycleCheckBox = (CheckBox) getActivity().findViewById(R.id.freqScanCycleTaskCb);
 
         String[] from = {ATTRIBUTE_FROM_FREQUENCY, ATTRIBUTE_TO_FREQUENCY,
                 ATTRIBUTE_FREQUENCY_STEP, ATTRIBUTE_TIME_STEP};
@@ -135,15 +150,15 @@ public class FrequencyScanModeFragment extends Fragment {
                 Task currentTask = mService.getCurrentTask();
                 fillUiFieldsFromTask(currentTask);
                 setControlsDisabled();
-                //mApplyBtn.setChecked(true);
+                mApplyBtn.setChecked(true);
             } else {
                 mService.stopAnyWorkingTask();
                 setControlsEnabled();
-                //mApplyBtn.setChecked(false);
+                mApplyBtn.setChecked(false);
             }
         }
-        IntentFilter intFilt = new IntentFilter(BoardManagerService.INTENT_TASK_DONE);
-        getActivity().registerReceiver(mTaskFinishedReceiver, intFilt);
+        IntentFilter intentFilter = new IntentFilter(BoardManagerService.INTENT_TASK_DONE);
+        getActivity().registerReceiver(mTaskFinishedReceiver, intentFilter);
     }
 
     private void fillUiFieldsFromTask(Task currentTask) {
@@ -189,6 +204,7 @@ public class FrequencyScanModeFragment extends Fragment {
             mChangeIndex = acmi.position - 1;
             Intent intent = new Intent(getActivity(), AddItemToFreqScanActivity.class);
             intent.putExtra(AddItemToFreqScanActivity.RUN_TYPE_ID, AddItemToFreqScanActivity.EDIT_RUN);
+
             String fromFrequency = mFreqScanData.get(mChangeIndex).get(ATTRIBUTE_FROM_FREQUENCY).toString();
             String toFrequency = mFreqScanData.get(mChangeIndex).get(ATTRIBUTE_TO_FREQUENCY).toString();
             String frequencyStep = mFreqScanData.get(mChangeIndex).get(ATTRIBUTE_FREQUENCY_STEP).toString();
@@ -197,23 +213,121 @@ public class FrequencyScanModeFragment extends Fragment {
             intent.putExtra(ATTRIBUTE_TO_FREQUENCY, toFrequency);
             intent.putExtra(ATTRIBUTE_FREQUENCY_STEP, frequencyStep);
             intent.putExtra(ATTRIBUTE_TIME_STEP, timeStep);
-            startActivityForResult(intent, ADD_ITEM_RUN);
+            startActivityForResult(intent, ADD_ITEM_REQUEST);
         }
         return super.onContextItemSelected(item);
     }
 
 
-    private void applyButtonClicked() {
-        showToast("Apply me");
+    private void onApplyButtonClick() {
+        if (mService == null) {
+            mService = getService();
+        }
+
+        if (mApplyBtn.isChecked()) {
+            if (mService == null) {
+                showToast("Service is dead!");
+                mApplyBtn.setChecked(false);
+                return;
+            }
+
+            if (!mService.isDeviceConnected()) {
+                showToast(getString(R.string.const_msg_no_device));
+                mApplyBtn.setChecked(false);
+                return;
+            }
+
+            if (mFreqScanData.isEmpty()) {
+                showToast(getString(R.string.freq_scan_toast_err_schedule_empty));
+                mApplyBtn.setChecked(false);
+                return;
+            }
+
+            Log.d(LOG_TAG, "Task performed");
+            boolean cycle = mCycleCheckBox.isChecked();
+            double[] fromFrequency = getFromFrequencyValues();
+            double[] toFrequency = getToFrequencyValues();
+            double[] frequencyStep = getFrequencyStepValues();
+            double[] timeStep = getTimeStepValues();
+            Task task = new Task(fromFrequency, toFrequency, frequencyStep, timeStep, cycle);
+            mService.performTask(task);
+            setControlsDisabled();
+        } else {
+            //stopping service
+            Log.d(LOG_TAG, "Button toggled off");
+            setControlsEnabled();
+            mService.stopAnyWorkingTask();
+        }
     }
 
-    private void addItemButtonClicked() {
+    private double[] getFromFrequencyValues() {
+        double[] fromFrequency = new double[mFreqScanData.size()];
+        for (int i = 0; i < mFreqScanData.size(); i++) {
+            fromFrequency[i] = Double.parseDouble(mFreqScanData.get(i).get(ATTRIBUTE_FROM_FREQUENCY).toString());
+        }
+        return fromFrequency;
+    }
+
+    private double[] getToFrequencyValues() {
+        double[] toFrequency = new double[mFreqScanData.size()];
+        for (int i = 0; i < mFreqScanData.size(); i++) {
+            toFrequency[i] = Double.parseDouble(mFreqScanData.get(i).get(ATTRIBUTE_TO_FREQUENCY).toString());
+        }
+        return toFrequency;
+    }
+
+    private double[] getFrequencyStepValues() {
+        double[] frequencyStep = new double[mFreqScanData.size()];
+        for (int i = 0; i < mFreqScanData.size(); i++) {
+            frequencyStep[i] = Double.parseDouble(mFreqScanData.get(i).get(ATTRIBUTE_FREQUENCY_STEP).toString());
+        }
+        return frequencyStep;
+    }
+
+    private double[] getTimeStepValues() {
+        double[] timeStep = new double[mFreqScanData.size()];
+        for (int i = 0; i < mFreqScanData.size(); i++) {
+            timeStep[i] = Double.parseDouble(mFreqScanData.get(i).get(ATTRIBUTE_TIME_STEP).toString());
+        }
+        return timeStep;
+    }
+
+    private void onAddItemButtonClick() {
         Intent intent = new Intent(getActivity(), AddItemToFreqScanActivity.class);
-        startActivityForResult(intent, ADD_ITEM_RUN);
+        startActivityForResult(intent, ADD_ITEM_REQUEST);
     }
 
-    private void readButtonClicked() {
-        showToast("Read me bitch!1111111");
+    private void onReadFileButtonClick() {
+        Intent intent = new Intent(getActivity(), ReadDataFromCSVFileActivity.class);
+        intent.putExtra(ReadDataFromCSVFileActivity.READ_FILE_TYPE_ID, ReadDataFromCSVFileActivity.READ_FREQUENCY_SCAN_FILE);
+        startActivityForResult(intent, READ_FILE_REQUEST);
+    }
+
+    private void onWriteFileButtonClick() {
+        if (mFreqScanData.isEmpty()) {
+            showToast(getString(R.string.freq_scan_toast_err_task_list_is_empty));
+            return;
+        }
+
+        int arraySize = mFreqScanData.size();
+        String[] fromFrequencyValues = new String[arraySize];
+        String[] toFrequencyValues = new String[arraySize];
+        String[] frequencyStepValues = new String[arraySize];
+        String[] timeStepValues = new String[arraySize];
+        for (int i = 0; i < arraySize; i++) {
+            fromFrequencyValues[i] = mFreqScanData.get(i).get(ATTRIBUTE_FROM_FREQUENCY).toString();
+            toFrequencyValues[i] = mFreqScanData.get(i).get(ATTRIBUTE_TO_FREQUENCY).toString();
+            frequencyStepValues[i] = mFreqScanData.get(i).get(ATTRIBUTE_FREQUENCY_STEP).toString();
+            timeStepValues[i] = mFreqScanData.get(i).get(ATTRIBUTE_TIME_STEP).toString();
+        }
+
+        Intent intent = new Intent(getActivity(), WriteDataToCSVFileActivity.class);
+        intent.putExtra(WriteDataToCSVFileActivity.WRITE_FILE_TYPE_ID, WriteDataToCSVFileActivity.WRITE_FREQUENCY_SCAN_FILE);
+        intent.putExtra(ATTRIBUTE_FROM_FREQUENCY_ARRAY, fromFrequencyValues);
+        intent.putExtra(ATTRIBUTE_TO_FREQUENCY_ARRAY, toFrequencyValues);
+        intent.putExtra(ATTRIBUTE_FREQUENCY_STEP_ARRAY, frequencyStepValues);
+        intent.putExtra(ATTRIBUTE_TIME_STEP_ARRAY, timeStepValues);
+        startActivityForResult(intent, WRITE_FILE_REQUEST);
     }
 
     private BoardManagerService getService(){
@@ -235,16 +349,24 @@ public class FrequencyScanModeFragment extends Fragment {
     }
 
     private void setControlsDisabled() {
-
+        mFreqScanLv.setEnabled(false);
+        mAddItemBtn.setEnabled(false);
+        mReadBtn.setEnabled(false);
+        mWriteBtn.setEnabled(false);
+        mCycleCheckBox.setEnabled(false);
     }
 
     private void setControlsEnabled() {
-
+        mFreqScanLv.setEnabled(true);
+        mAddItemBtn.setEnabled(true);
+        mReadBtn.setEnabled(true);
+        mWriteBtn.setEnabled(true);
+        mCycleCheckBox.setEnabled(true);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == ADD_ITEM_RUN) {
+        if (requestCode == ADD_ITEM_REQUEST) {
             if (data == null) {
                 Log.e(LOG_TAG, "No data from additem");
                 return;
@@ -255,23 +377,43 @@ public class FrequencyScanModeFragment extends Fragment {
             String fromFrequency = String.valueOf(data.getDoubleExtra(ATTRIBUTE_FROM_FREQUENCY, 0.0));
             String toFrequency = String.valueOf(data.getDoubleExtra(ATTRIBUTE_TO_FREQUENCY, 0.0));
             String frequencyStep = String.valueOf(data.getDoubleExtra(ATTRIBUTE_FREQUENCY_STEP, 0.0));
-            String timeStep = String.valueOf(data.getIntExtra(ATTRIBUTE_TIME_STEP, 0));
+            String timeStep = String.valueOf(data.getDoubleExtra(ATTRIBUTE_TIME_STEP, 0.0));
             if (runType == AddItemToFreqScanActivity.ADD_RUN) {
                 addDataToList(fromFrequency, toFrequency, frequencyStep, timeStep);
             } else if (runType == AddItemToScheduleActivity.EDIT_RUN) {
-                //editDataInList(frequency, time);
+                editDataInList(fromFrequency, toFrequency, frequencyStep, timeStep);
             }
-        } else if (requestCode == READ_FILE_RUN) {
+        } else if (requestCode == READ_FILE_REQUEST) {
             if (resultCode != getActivity().RESULT_OK || data == null) {
                 showToast("No data added");
                 Log.d(LOG_TAG, "read file failed");
                 return;
             }
-//            double[] frequency = data.getDoubleArrayExtra(ATTRIBUTE_FREQUENCY_ARRAY);
-//            int[] time = data.getIntArrayExtra(ATTRIBUTE_TIME_ARRAY);
-//            fillScheduleFromArrays(frequency, time);
-
+            double[] fromFrequency = data.getDoubleArrayExtra(ATTRIBUTE_FROM_FREQUENCY_ARRAY );
+            double[] toFrequency = data.getDoubleArrayExtra(ATTRIBUTE_TO_FREQUENCY_ARRAY);
+            double[] frequencyStep = data.getDoubleArrayExtra(ATTRIBUTE_FREQUENCY_STEP_ARRAY);
+            double[] timeStep = data.getDoubleArrayExtra(ATTRIBUTE_TIME_STEP_ARRAY);
+            fillTaskListFromArrays(fromFrequency, toFrequency, frequencyStep, timeStep);
         }
+    }
+
+    private void fillTaskListFromArrays(double[] fromFrequency , double[] toFrequency,
+                                        double[] frequencyStep, double[] timeStep) {
+        if (fromFrequency.length != toFrequency.length) {
+            Log.d(LOG_TAG, "Arrays length mismatch");
+            return;
+        }
+
+        mFreqScanData.clear();
+        for (int i = 0; i < fromFrequency.length; i++) {
+            Map<String, Object> newFreqScanListItem = new HashMap<String, Object>();
+            newFreqScanListItem.put(ATTRIBUTE_FROM_FREQUENCY, String.valueOf(fromFrequency[i]));
+            newFreqScanListItem.put(ATTRIBUTE_TO_FREQUENCY, String.valueOf(toFrequency[i]));
+            newFreqScanListItem.put(ATTRIBUTE_FREQUENCY_STEP, String.valueOf(frequencyStep[i]));
+            newFreqScanListItem.put(ATTRIBUTE_TIME_STEP, String.valueOf(timeStep[i]));
+            mFreqScanData.add(newFreqScanListItem);
+        }
+        mFreqScanListAdapter.notifyDataSetChanged();
     }
 
     private void addDataToList(String fromFrequency, String toFrequency, String frequencyStep, String timeStep) {
@@ -284,10 +426,23 @@ public class FrequencyScanModeFragment extends Fragment {
         mFreqScanListAdapter.notifyDataSetChanged();
     }
 
+    private void editDataInList(String fromFrequency, String toFrequency, String frequencyStep, String timeStep) {
+        Map<String, Object> freqScanlListItem = mFreqScanData.get(mChangeIndex);
+        freqScanlListItem.remove(ATTRIBUTE_FROM_FREQUENCY);
+        freqScanlListItem.remove(ATTRIBUTE_TO_FREQUENCY);
+        freqScanlListItem.remove(ATTRIBUTE_FREQUENCY_STEP);
+        freqScanlListItem.remove(ATTRIBUTE_FROM_FREQUENCY);
+        freqScanlListItem.put(ATTRIBUTE_FROM_FREQUENCY, fromFrequency);
+        freqScanlListItem.put(ATTRIBUTE_TO_FREQUENCY, toFrequency);
+        freqScanlListItem.put(ATTRIBUTE_FREQUENCY_STEP, frequencyStep);
+        freqScanlListItem.put(ATTRIBUTE_TIME_STEP, timeStep);
+        mFreqScanListAdapter.notifyDataSetChanged();
+    }
+
     private final BroadcastReceiver mTaskFinishedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //mApplyBtn.setChecked(false);
+            mApplyBtn.setChecked(false);
             setControlsEnabled();
             showToast(getString(R.string.schedule_toast_task_done));
         }

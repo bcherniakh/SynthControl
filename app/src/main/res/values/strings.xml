@@ -22,32 +22,30 @@
     <string name="const_msg_device_disconnected">Device has been disconnected</string>
     <string name="const_msg_no_device">No device present!</string>
 
-
-
     <!--Scheduler fragment resources-->
     <string name="scheduler_mode_title">Scheduler</string>
-    <string name="scheduler_btn_add_item">Add entry</string>
+    <string name="scheduler_btn_add_item">Add item</string>
     <string name="scheduler_menu_entry_delete_item">Delete item</string>
     <string name="scheduler_menu_entry_edit_item">Edit item</string>
     <string name="action_stop_service">Stop service</string>
     <string name="scheduler_btn_start">PUSH ME</string>
     <string name="schedule_list_header_frequency">Frequency (Mhz)</string>
-    <string name="schedule_list_header_time">Time (seconds)</string>
+    <string name="schedule_list_header_time">Time (sec)</string>
     <string name="scheduler_btn_read_file">Read</string>
     <string name="scheduler_btn_write_file">Write</string>
     <string name="scheduler_btn_hint_read_file">Press to read list from file</string>
-    <string name="scheduler_toast_err_schedule_empty">Schedule is empty.</string>
+    <string name="scheduler_toast_err_schedule_empty">Schedule task list is empty</string>
     <string name="scheduler_checkbox_title">cycle</string>
     <string name="schedule_toast_task_done">Task done!</string>
 
     <string-array name="operation_modes">
-        <item>Constant value mode</item>
+        <item>Constant mode</item>
         <item>Schedule mode</item>
         <item>Frequency scan mode</item>
     </string-array>
 
     <!--Add item to schedule activity resources-->
-    <string name="additem_title_activity">Edit entry</string>
+    <string name="additem_title_activity">Edit item</string>
     <string name="additem_title_enter_frequency">Enter Frequency in MHz:</string>
     <string name="additem_title_enter_time">Enter time of operating:</string>
     <string name="additem_tile_hours">hours:</string>
@@ -55,7 +53,7 @@
     <string name="additem_title_seconds">seconds:</string>
     <string name="additem_btn_apply">Apply</string>
     <string name="additem_msg_frequency_incorrect">Enter value in range from 35 MHz to 4.4 GHz</string>
-    <string name="additem_msg_time_incorrect">Time is incorrect. Please enter correct value.</string>
+    <string name="additem_msg_time_incorrect">Enter value in range from 1 s to 6 hours</string>
     <string name="additem_msg_parse_error">Some fields are filled incorrect. Check and try again.</string>
 
     <!--BoardManagerService service resourses-->
@@ -73,17 +71,20 @@
     <string name="bms_notif_subcont_plase_tap">Please, give a proper permission than tap to connect!</string>
     <string name="title_activity_read_schedule">ReadScheduleActivity</string>
 
-    <!--ReadScheduleActivity resources-->
-    <string name="read_title_main">Read schedule from csv file</string>
+    <!--Read data from csv file Activity resources-->
+    <string name="read_title_schedule">Read schedule from csv file</string>
+    <string name="read_title_freq_scan">Read frequency scan task list from csv file</string>
     <string name="read_btn_title">Open file</string>
     <string name="read_dialog_error_title">An error occurred</string>
     <string name="read_dialog_error_no_storage">Please check the availability of the external storage and try again</string>
-    <string name="read_dialog_error_no_folder">No directory SynthControl found on SD card</string>
+    <string name="read_dialog_error_no_folder">No directory found on SD card</string>
     <string name="read_dialog_error_no_storage_okbutton">Ok</string>
     <string name="read_toast_error_select_entry">Please, select file. Than press Open File.</string>
     <string name="read_dialog_error_parse_error">Error with data on line </string>
     <string name="read_dialog_error_frequency_range">Frequency is out of range 35Mhz to 4.4 GHz on line</string>
-    <string name="read_dialog_error_time_range">Time is out of range 0 sec to 6 hours on line</string>
+    <string name="read_dialog_error_time_range">Time is out of range 1 sec to 6 hours on line</string>
+    <string name="read_dialog_error_frequency_step_range">Frequency step is out of range 1 KHz to 4.4 GHz</string>
+    <string name="read_dialog_error_time_step_range">Time step is out of range 1 ms to 6 hours</string>
     <string name="read_dialog_error_file_empty">Selected file is empty</string>
 
 
@@ -91,10 +92,12 @@
     <string name="action_settings">Settings</string>
 
     <!--WriteSceduleActivity resourses-->
-    <string name="write_title_main">Write schedule to csv file</string>
+    <string name="write_title_main">Write data to csv file</string>
     <string name="write_dialog_error_zero_array">No data to proceed</string>
-    <string name="write_explanation_title">Write schedule to csv file</string>
-    <string name="write_explanation_directory">File will be saved to SynthControl directory on SDcard 0</string>
+    <string name="write_schedule_explanation_title">Write schedule task list to csv file</string>
+    <string name="write_freq_scan_explanation_title">Write frequency scan task list to CVS file</string>
+    <string name="write_schedule_explanation_directory">File will be saved to SynthControl/Schedule directory on SDcard 0</string>
+    <string name="write_freq_scan_explanation_directory">File will be saved to SynthControl/FrequencyScan directory on SDcard0</string>
     <string name="write_explanation_file_name">Enter file name:</string>
     <string name="write_file_btn_title">Write</string>
     <string name="write_dialog_error_no_storage">Please check the availability of the external storage and try again</string>
@@ -110,32 +113,35 @@
     <string name="write_toast_file_wrote_begin">File</string>
     <string name="write_toast_file_wrote_end">has been successfully written</string>
 
-
+    <!--Additem to frequency scan resources-->
     <string name="additem_freq_scan_main_title">Add item fo frequency scan mode</string>
     <string name="additem_freq_scan_cycle_checkbox">Cycle</string>
     <string name="additem_freq_scan_frequency_from">From (MHz)</string>
     <string name="additem_freq_scan_frequency_to">To (MHz)</string>
     <string name="additem_freq_scan_frequency_step">Step (MHz)</string>
-    <string name="additem_freq_scan_time_step">Time step (seconds)</string>
+    <string name="additem_freq_scan_time_step">Time step (s)</string>
     <string name="additem_freq_scan_apply_btn_title">Apply</string>
-    <string name="additem_freq_scan_toast_frequency_range">Frequency is out of range from 35Mhz to 4.4 GHz</string>
-    <string name="additem_freq_scan_toast_step_incorrect">Frequency step could be in the range from 0.001 to 1000 Mhz</string>
-    <string name="additem_freq_scan_toast_time_incorrect">Time step could be in the range from 0.1 second to 1 hour</string>
+    <string name="additem_freq_scan_toast_frequency_range">Frequency is out of range from 35 Mhz to 4.4 GHz</string>
+    <string name="additem_freq_scan_toast_step_incorrect">Frequency step could be in the range from 1 KHz to 1 GHz</string>
+    <string name="additem_freq_scan_toast_time_incorrect">Time step could be in the range from 1 ms to 6 hour</string>
     <string name="additem_freq_scan_toast_from_to">Value from is greater or equal to the value to</string>
     <string name="additem_title_activity_add_item_to_freq_scan">AddItemToFreqScanActivity</string>
     <string name="additem_freq_scan_msg_parse_error">Some fields are filled incorrect. Check and try again.</string>
 
 
     <!--Frequency scan fragment-->
-    <string name="freq_scan_main_title">Hello world!</string>
+    <string name="freq_scan_main_title">Frequency scan mode</string>
     <string name="freq_scan_btn_apply">Apply</string>
-    <string name="freq_scan_btn_additem">Add item</string>
-    <string name="freq_scan_btn_read">Read</string>
+    <string name="freq_scan_btn_add_item">Add item</string>
+    <string name="freq_scan_btn_read_file">Read</string>
+    <string name="freq_scan_btn_write_file">Write</string>
     <string name="freq_scan_list_header_from_frequency">From (Mhz)</string>
     <string name="freq_scan_list_header_to_frequency">To (MHz)</string>
     <string name="freq_scan_list_header_frequency_step">Step (MHz)</string>
     <string name="freq_scan_list_header_time_step">Time step (sec)</string>
     <string name="freq_scan_menu_entry_delete_item">Delete item</string>
     <string name="freq_scan_menu_entry_edit_item">Edit item</string>
+    <string name="freq_scan_toast_err_task_list_is_empty">Task list is empty.</string>
+    <string name="freq_scan_toast_err_schedule_empty">Frequency scan task list is empty</string>
 
 </resources>

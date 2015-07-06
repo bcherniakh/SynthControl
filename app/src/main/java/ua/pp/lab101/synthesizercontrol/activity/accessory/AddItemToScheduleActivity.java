@@ -30,7 +30,7 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
     private EditText mHoursValueET = null;
     private double mFrequencyValue = 0;
     private int mTimeInSecondsValue = 0;
-    private int mRunType = 0;
+    private int mRunType;
 
 
     @Override
@@ -44,7 +44,7 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
         mHoursValueET = (EditText) findViewById(R.id.timeValueHours);
         mApplyBtn.setOnClickListener(this);
         Intent intent = getIntent();
-        mRunType = intent.getIntExtra(RUN_TYPE_ID, 0);
+        mRunType = intent.getIntExtra(RUN_TYPE_ID, ADD_RUN);
         Log.d("Run type is: " + LOG_TAG, String.valueOf(mRunType));
         if (mRunType == EDIT_RUN) {
             int hours = 0;
@@ -118,7 +118,7 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
             return;
         }
 
-        if (mTimeInSecondsValue <= 0 || mTimeInSecondsValue > 6*3600) {
+        if (mTimeInSecondsValue <= 1 || mTimeInSecondsValue > 6*3600) {
             showToast(getString(R.string.additem_msg_time_incorrect));
             return;
         }
