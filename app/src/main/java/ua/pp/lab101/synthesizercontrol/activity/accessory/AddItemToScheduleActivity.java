@@ -118,7 +118,7 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
             return;
         }
 
-        if (mTimeInSecondsValue <= 1 || mTimeInSecondsValue > 6*3600) {
+        if (mTimeInSecondsValue < 1 || mTimeInSecondsValue > 6*3600) {
             showToast(getString(R.string.additem_msg_time_incorrect));
             return;
         }

@@ -80,11 +80,11 @@
     <string name="read_dialog_error_no_folder">Папка не знайдена на карті SD</string>
     <string name="read_dialog_error_no_storage_okbutton">Ok</string>
     <string name="read_toast_error_select_entry">Будь ласка, оберіть файл. Потім натисніть "Відкрити файл"</string>
-    <string name="read_dialog_error_parse_error">Помилка з даними на рядку</string>
-    <string name="read_dialog_error_frequency_range">Частота поза діапазоном 35 МГц - 4.4 ГГц на рядку</string>
-    <string name="read_dialog_error_time_range">Час поза діапазоном 1 с 6 годин на рядку</string>
-    <string name="read_dialog_error_frequency_step_range">Крок частоти поза діапазоном 1 КГц - 4.4 ГГц</string>
-    <string name="read_dialog_error_time_step_range">Крок часу поза діапазоном 1 мс - 6 годин</string>
+    <string name="read_dialog_error_parse_error">Помилка даних в рядку</string>
+    <string name="read_dialog_error_frequency_range">Частота поза діапазоном 35 МГц - 4.4 ГГц в рядку</string>
+    <string name="read_dialog_error_time_range">Час поза діапазоном 1 с - 6 годин в рядку</string>
+    <string name="read_dialog_error_frequency_step_range">Крок частоти поза діапазоном 1 КГц - 1 ГГц в рядку</string>
+    <string name="read_dialog_error_time_step_range">Крок часу поза діапазоном 1 мс - 6 годин в рядку</string>
     <string name="read_dialog_error_file_empty">Обраний файл пустий</string>
 
 

@@ -83,7 +83,7 @@
     <string name="read_dialog_error_parse_error">Error with data on line </string>
     <string name="read_dialog_error_frequency_range">Frequency is out of the range 35 Mhz to 4.4 GHz on line</string>
     <string name="read_dialog_error_time_range">Time is out of the range 1 sec - 6 hours on line</string>
-    <string name="read_dialog_error_frequency_step_range">Frequency step is out of range 1 KHz to 4.4 GHz</string>
+    <string name="read_dialog_error_frequency_step_range">Frequency step is out of range 1 KHz to 1 GHz</string>
     <string name="read_dialog_error_time_step_range">Time step is out of the range 1 ms - 6 hours</string>
     <string name="read_dialog_error_file_empty">Selected file is empty</string>
 

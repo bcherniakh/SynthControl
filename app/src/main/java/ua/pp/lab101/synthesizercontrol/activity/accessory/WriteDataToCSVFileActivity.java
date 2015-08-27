@@ -94,7 +94,7 @@ public class WriteDataToCSVFileActivity extends Activity implements View.OnClick
 
     @Override
     public void onPause() {
-        super.onResume();
+        super.onPause();
     }
 
     @Override
@@ -345,6 +345,13 @@ public class WriteDataToCSVFileActivity extends Activity implements View.OnClick
             Log.d(LOG_TAG, "No directory found");
             File directory = new File(Environment.getExternalStorageDirectory()+File.separator+mDirectoryName);
             directory.mkdirs();
+            if (mWriteTypeID == WRITE_SCHEDULE_FILE) {
+                File schedulerDirectory = new File(Environment.getExternalStorageDirectory()+File                           .separator+mDirectoryName + File.separator + mScheduleDirectoryName);
+                schedulerDirectory.mkdirs();
+            } else if (mWriteTypeID == WRITE_FREQUENCY_SCAN_FILE) {
+                File frequencyScanDirectory = new File(Environment.getExternalStorageDirectory()+File                           .separator+mDirectoryName+ File.separator + mFrequencyScanDirectoryName);
+                frequencyScanDirectory.mkdirs();
+            }
             notifyAboutError(getString(R.string.write_dialog_error_no_folder), false);
             return;
         }

@@ -80,12 +80,12 @@
     <string name="read_dialog_error_no_folder">Папка не найдена на карте SD</string>
     <string name="read_dialog_error_no_storage_okbutton">Ok</string>
     <string name="read_toast_error_select_entry">Пожалуйста, выберите файл и нажмите "Открыть" </string>
-    <string name="read_dialog_error_parse_error">Ошибка в данных на строке</string>
-    <string name="read_dialog_error_frequency_range">Частота вне диапазона 35 МГц - 4.4 ГГц на строке</string>
-    <string name="read_dialog_error_time_range">Время вне диапазона 1 с  6 часов на строке</string>
-    <string name="read_dialog_error_frequency_step_range">Шаг частоты вне диапазона  1 КГц - 4.4 ГГц</string>
-    <string name="read_dialog_error_time_step_range">Шаг времени вне диапазона 1 мс - 6 часов</string>
-    <string name="read_dialog_error_file_empty">Выбраный файл пуст</string>
+    <string name="read_dialog_error_parse_error">Ошибка данных в строке</string>
+    <string name="read_dialog_error_frequency_range">Частота вне диапазона 35 МГц - 4.4 ГГц в строке</string>
+    <string name="read_dialog_error_time_range">Время вне диапазона 1 с - 6 часов в строке</string>
+    <string name="read_dialog_error_frequency_step_range">Шаг частоты вне диапазона  1 КГц - 1 ГГц в строке</string>
+    <string name="read_dialog_error_time_step_range">Шаг времени вне диапазона 1 мс - 6 часов в строке</string>
+    <string name="read_dialog_error_file_empty">Выбранный файл пуст</string>
 
 
 
