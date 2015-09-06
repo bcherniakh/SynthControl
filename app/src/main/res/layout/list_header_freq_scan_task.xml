@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+    <TextView
+        android:id="@+id/freqScanListHeaderFromText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/freq_scan_list_header_from_frequency"
+        android:gravity="top|left"
+        android:textSize="20sp"
+        android:layout_weight="1"
+        android:focusable="false"
+        android:layout_gravity="center_horizontal">
+    </TextView>
+    <TextView
+        android:id="@+id/freqScanListHeaderToText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/freq_scan_list_header_to_frequency"
+        android:textSize="20sp"
+        android:gravity="top|left"
+        android:layout_weight="1"
+        android:layout_gravity="center_horizontal"
+        android:focusable="false">
+    </TextView>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/freq_scan_list_header_frequency_step"
+        android:id="@+id/freqScanListHeaderFrequencyStepText"
+        android:layout_weight="1"
+        android:textSize="20sp"
+        android:gravity="top|left"
+        android:focusable="false"
+        android:layout_gravity="center_horizontal" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/freq_scan_list_header_time_step"
+        android:id="@+id/freqScanListHeaderTimeStepText"
+        android:layout_weight="1"
+        android:textSize="20sp"
+        android:gravity="top|left"
+        android:focusable="false"
+        android:layout_gravity="center_horizontal" />
+</LinearLayout>

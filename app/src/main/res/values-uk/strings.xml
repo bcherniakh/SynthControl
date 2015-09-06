@@ -1,0 +1,147 @@
+<resources>
+
+    <!--String resources in general -->
+    <string name="main_app_name">Управління генератором</string>
+
+    <!--Fragment titles-->
+    <string name="main_constant_title">Режим постійного значення</string>
+    <string name="main_scheduler_title">Режим розкладу</string>
+    <string name="main_dialog_device_unplugged_title">Пристрій було відключено!</string>
+    <string name="main_dialog_device_unplugged_message">Вибачте, пристрій відключено</string>
+    <string name="main_dialog_device_unplugged_cancel_btn">Ok!</string>
+
+    <!--Constant fragment resources-->
+    <string name="const_fragment_title">Режим постійного значення</string>
+    <string name="const_enter_data">Задайте значення частоти в МГц:</string>
+    <string name="const_toggle_on">Ввімкнути</string>
+    <string name="const_toggle_off">Вимкнути</string>
+    <string name="const_btn_apply_frequency">Застосувати</string>
+    <string name="const_msg_device_found">Пристрій було знайлено та проініціалізовано</string>
+    <string name="const_msg_frequency_input_err">Помилка введення частоти</string>
+    <string name="const_msg_frequency_range_err">Частота має знаходитись в діапазоні 35 МГц - 4.4 ГГц</string>
+    <string name="const_msg_device_disconnected">Пристрій було відключено</string>
+    <string name="const_msg_no_device">Пристрій не знайдено</string>
+
+    <!--Scheduler fragment resources-->
+    <string name="scheduler_mode_title">Розклад</string>
+    <string name="scheduler_btn_add_item">Додати пункт</string>
+    <string name="scheduler_menu_entry_delete_item">Видалити пункт</string>
+    <string name="scheduler_menu_entry_edit_item">Змінити пункт</string>
+    <string name="action_stop_service">Зупинити сервіс</string>
+    <string name="scheduler_btn_start">Застосувати</string>
+    <string name="schedule_list_header_frequency">Частота (МГц)</string>
+    <string name="schedule_list_header_time">Час (с)</string>
+    <string name="scheduler_btn_read_file">Прочитати</string>
+    <string name="scheduler_btn_write_file">Записати</string>
+    <string name="scheduler_btn_hint_read_file">Нажміть для читання розкладу задач з файлу</string>
+    <string name="scheduler_toast_err_schedule_empty">Розклад задач порожній</string>
+    <string name="scheduler_checkbox_title">зациклити</string>
+    <string name="schedule_toast_task_done">Задачу виконано!</string>
+
+    <string-array name="operation_modes">
+        <item>Режим постійного значення</item>
+        <item>Режим розкладу</item>
+        <item>Режим перебору частот</item>
+    </string-array>
+
+    <!--Add item to schedule activity resources-->
+    <string name="additem_title_activity">Змінити пункт</string>
+    <string name="additem_title_enter_frequency">Задайте частоту в МГц:</string>
+    <string name="additem_title_enter_time">Задайте час роботи:</string>
+    <string name="additem_tile_hours">години:</string>
+    <string name="additem_title_minutes">хвилини:</string>
+    <string name="additem_title_seconds">секунди:</string>
+    <string name="additem_btn_apply">Застосувати</string>
+    <string name="additem_msg_frequency_incorrect">Задайте значення з інтервалу 35 МГц - 4.4 ГГц</string>
+    <string name="additem_msg_time_incorrect">Задайте значення часу в інтервалі 1 с - 6 годин</string>
+    <string name="additem_msg_parse_error">Деякі поля заповнені некоректно</string>
+
+    <!--BoardManagerService service resourses-->
+    <string name="bms_notif_title">Керування пристроєм</string>
+    <string name="bms_notif_content_title">Поточний статус: </string>
+    <string name="bms_notif_content_status_disconnected">пристрій відключено</string>
+    <string name="bms_notif_content_connected">пристрій підключено</string>
+    <string name="bms_notif_content_staus_found">пристрій знайдено</string>
+    <string name="bms_notif_content_status_idle">простій</string>
+    <string name="bms_notif_content_status_constant">постійне значення</string>
+    <string name="bms_notif_content_status_schedule">рокзлад</string>
+    <string name="bms_notif_content_status_freqscan">пребір частот</string>
+    <string name="bms_notif_subcont_title">Частота (МГц):</string>
+    <string name="bms_notif_subcont_none">нема</string>
+    <string name="bms_notif_subcont_plase_tap">Будь ласка, надайте необхідний дозвіл та натисніть</string>
+    <string name="title_activity_read_schedule">Читання розкладу</string>
+
+    <!--Read data from csv file Activity resources-->
+    <string name="read_title_schedule">Прочитати розклад з файлу csv</string>
+    <string name="read_title_freq_scan">Прочитати список задач з файлу csv</string>
+    <string name="read_btn_title">Відкрити файл</string>
+    <string name="read_dialog_error_title">Виникла помилка</string>
+    <string name="read_dialog_error_no_storage">Будь ласка, перевірте доступність зовнішнього сховища та спробуйте ще</string>
+    <string name="read_dialog_error_no_folder">Папка не знайдена на карті SD</string>
+    <string name="read_dialog_error_no_storage_okbutton">Ok</string>
+    <string name="read_toast_error_select_entry">Будь ласка, оберіть файл. Потім натисніть "Відкрити файл"</string>
+    <string name="read_dialog_error_parse_error">Помилка даних в рядку</string>
+    <string name="read_dialog_error_frequency_range">Частота поза діапазоном 35 МГц - 4.4 ГГц в рядку</string>
+    <string name="read_dialog_error_time_range">Час поза діапазоном 1 с - 6 годин в рядку</string>
+    <string name="read_dialog_error_frequency_step_range">Крок частоти поза діапазоном 1 КГц - 1 ГГц в рядку</string>
+    <string name="read_dialog_error_time_step_range">Крок часу поза діапазоном 1 мс - 6 годин в рядку</string>
+    <string name="read_dialog_error_file_empty">Обраний файл пустий</string>
+
+
+
+    <string name="action_settings">Налаштування</string>
+
+    <!--WriteSceduleActivity resourses-->
+    <string name="write_title_main">Запис даних в файл csv</string>
+    <string name="write_dialog_error_zero_array">Відсутні дані</string>
+    <string name="write_schedule_explanation_title">Записати список задач розкладу в файл csv</string>
+    <string name="write_freq_scan_explanation_title">Записати список задач в файл CVS</string>
+    <string name="write_schedule_explanation_directory">Файл буде збережено до папки SynthControl/Schedule на SDcard 0</string>
+    <string name="write_freq_scan_explanation_directory">Файл буде збережено до папки SynthControl/FrequencyScan на SDcard0</string>
+    <string name="write_explanation_file_name">Введіть назву файла:</string>
+    <string name="write_file_btn_title">Записати</string>
+    <string name="write_dialog_error_no_storage">Будь ласка, перевірте доступність зовнішнього сховища та спробуйте ще</string>
+    <string name="write_dialog_error_no_folder">Папка SynthControl не знайдена на карті SD. Створена нова папка.</string>
+    <string name="write_toast_empty_file_name">Назву файла не задано</string>
+    <string name="write_dialog_error_io_error">Помилка вводу-виводу</string>
+    <string name="write_dialog_over_title">Перезаписати існуючий файл?</string>
+    <string name="write_dialog_over_message_begin">Файл</string>
+    <string name="write_dialog_over_message_end">існує. Перезаписати?</string>
+    <string name="write_dialog_over_btn_positive">Так</string>
+    <string name="write_dialog_over_btn_negative">Ні</string>
+    <string name="write_toast_file_overwritten">Файл було перезаписано</string>
+    <string name="write_toast_file_wrote_begin">Файл</string>
+    <string name="write_toast_file_wrote_end">було успішно збережено</string>
+
+    <!--Additem to frequency scan resources-->
+    <string name="additem_freq_scan_main_title">Додати пункт до списку задач</string>
+    <string name="additem_freq_scan_cycle_checkbox">зациклити</string>
+    <string name="additem_freq_scan_frequency_from">Від (МГц)</string>
+    <string name="additem_freq_scan_frequency_to">До (МГц)</string>
+    <string name="additem_freq_scan_frequency_step">Крок (МГц)</string>
+    <string name="additem_freq_scan_time_step">Крок час (секунди)</string>
+    <string name="additem_freq_scan_apply_btn_title">Застосувати</string>
+    <string name="additem_freq_scan_toast_frequency_range">Частота поза діапазоном 35 МГц - 4.4 ГГц</string>
+    <string name="additem_freq_scan_toast_step_incorrect">Крок частоти поза діапазоном 1 КГц - 1 ГГц</string>
+    <string name="additem_freq_scan_toast_time_incorrect">Крок часу поза діапазоном  1 мс - 6 годин</string>
+    <string name="additem_freq_scan_toast_from_to">Значення від більше значення до</string>
+    <string name="additem_title_activity_add_item_to_freq_scan">Дадти пункт</string>
+    <string name="additem_freq_scan_msg_parse_error">Деякі поля заповнені некоректно</string>
+
+
+    <!--Frequency scan fragment-->
+    <string name="freq_scan_main_title">Режим перебору частот</string>
+    <string name="freq_scan_btn_apply">Застосувати</string>
+    <string name="freq_scan_btn_add_item">Додати пункт</string>
+    <string name="freq_scan_btn_read_file">Прочитати</string>
+    <string name="freq_scan_btn_write_file">Записати</string>
+    <string name="freq_scan_list_header_from_frequency">Від (МГц)</string>
+    <string name="freq_scan_list_header_to_frequency">До (МГц)</string>
+    <string name="freq_scan_list_header_frequency_step">Крок (МГц)</string>
+    <string name="freq_scan_list_header_time_step">Крок часу (с)</string>
+    <string name="freq_scan_menu_entry_delete_item">Видалити пункт</string>
+    <string name="freq_scan_menu_entry_edit_item">Змінити пункт</string>
+    <string name="freq_scan_toast_err_task_list_is_empty">Список задач порожній</string>
+    <string name="freq_scan_toast_err_schedule_empty">Список задач порожній</string>
+
+</resources>
