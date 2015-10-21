@@ -2,7 +2,7 @@ package ua.pp.lab101.synthesizercontrol.activity.accessory;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -18,7 +18,7 @@ import java.math.RoundingMode;
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.SchedulerModeFragment;
 
-public class AddItemToScheduleActivity extends ActionBarActivity implements View.OnClickListener{
+public class AddItemToScheduleActivity extends AppCompatActivity implements View.OnClickListener{
     public static final String RUN_TYPE_ID = "run_type";
     public static final int ADD_RUN = 0;
     public static final int EDIT_RUN = 1;
@@ -31,6 +31,8 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
     private double mFrequencyValue = 0;
     private int mTimeInSecondsValue = 0;
     private int mRunType;
+
+    private String mSavedData = "";
 
 
     @Override
@@ -65,8 +67,45 @@ public class AddItemToScheduleActivity extends ActionBarActivity implements View
             mMinutesValueET.setText("0");
             mSecondsValueET.setText("0");
         }
+
+        setFocusListener(mFrequencyValueET);
+        setFocusListener(mSecondsValueET);
+        setFocusListener(mMinutesValueET);
+        setFocusListener(mHoursValueET);
+
+        setOnClickListener(mFrequencyValueET);
+        setOnClickListener(mSecondsValueET);
+        setOnClickListener(mMinutesValueET);
+        setOnClickListener(mHoursValueET);
     }
 
+    private void setFocusListener(final EditText editText) {
+        if (editText == null) return;
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (editText.isFocused()) {
+                    mSavedData = editText.getText().toString();
+                    editText.getText().clear();
+                } else {
+                    if (editText.getText().toString().isEmpty()) {
+                        editText.setText(mSavedData);
+                    }
+                }
+            }
+        });
+    }
+
+    private void setOnClickListener (final EditText editText) {
+        if (editText == null) return;
+
+        editText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editText.clearFocus();
+            }
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

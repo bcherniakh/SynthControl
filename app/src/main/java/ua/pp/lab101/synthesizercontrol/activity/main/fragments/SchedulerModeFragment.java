@@ -2,7 +2,7 @@ package ua.pp.lab101.synthesizercontrol.activity.main.fragments;
 
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,8 +22,6 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
-import org.apache.http.ReasonPhraseCatalog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,8 +76,8 @@ public class SchedulerModeFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         setRetainInstance(true);
     }
 

@@ -1,11 +1,11 @@
 package ua.pp.lab101.synthesizercontrol.activity.accessory;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -29,7 +29,7 @@ import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.FrequencyScanModeFragment;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.SchedulerModeFragment;
 
-public class ReadDataFromCSVFileActivity extends Activity implements View.OnClickListener {
+public class ReadDataFromCSVFileActivity extends AppCompatActivity implements View.OnClickListener {
     public static final String READ_FILE_TYPE_ID = "read_file_type";
     public static final int READ_SCHEDULE_FILE = 0;
     public static final int READ_FREQUENCY_SCAN_FILE = 1;
@@ -91,7 +91,7 @@ public class ReadDataFromCSVFileActivity extends Activity implements View.OnClic
 
     @Override
     public void onPause() {
-        super.onResume();
+        super.onPause();
     }
 
     @Override

@@ -1,7 +1,9 @@
 <resources>
 
-    <!--String resources in general -->
+    <!--Common string resources -->
     <string name="main_app_name">Synthesizer Control</string>
+    <string name="common_start_task_btn_toggle_on">Start</string>
+    <string name="common_start_task_btn_toggle_off">Stop</string>
 
     <!--Fragment titles-->
     <string name="main_constant_title">Constant mode</string>
@@ -13,8 +15,6 @@
     <!--Constant fragment resources-->
     <string name="const_fragment_title">Constant mode</string>
     <string name="const_enter_data">Enter frequency value in MHz:</string>
-    <string name="const_toggle_on">Turn ON</string>
-    <string name="const_toggle_off">Turn OFF</string>
     <string name="const_btn_apply_frequency">Apply</string>
     <string name="const_msg_device_found">The device was found and initialized</string>
     <string name="const_msg_frequency_input_err">Frequency input error</string>
@@ -143,5 +143,6 @@
     <string name="freq_scan_menu_entry_edit_item">Edit item</string>
     <string name="freq_scan_toast_err_task_list_is_empty">Task list is empty.</string>
     <string name="freq_scan_toast_err_schedule_empty">Frequency scan task list is empty</string>
+    <string name="title_activity_set_frequency">SetFrequencyActivity</string>
 
 </resources>

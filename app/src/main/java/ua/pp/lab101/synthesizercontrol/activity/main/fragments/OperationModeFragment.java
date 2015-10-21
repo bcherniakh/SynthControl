@@ -1,8 +1,9 @@
 package ua.pp.lab101.synthesizercontrol.activity.main.fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
-import android.app.ListFragment;
+import android.support.v4.app.ListFragment;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
@@ -42,12 +43,12 @@ public class OperationModeFragment extends ListFragment {
 
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (OperationModeListener) activity;
+            mListener = (OperationModeListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
     }

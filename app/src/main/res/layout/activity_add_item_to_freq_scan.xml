@@ -1,99 +1,101 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-tools:context="ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToFreqScanActivity"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:paddingLeft="@dimen/activity_horizontal_margin"
-android:paddingRight="@dimen/activity_horizontal_margin"
-android:paddingTop="@dimen/activity_vertical_margin"
-android:paddingBottom="@dimen/activity_vertical_margin"
-android:orientation="vertical">
-
-<TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="@string/additem_freq_scan_main_title"
-    android:textSize="18sp" />
-
-    <LinearLayout
-    android:orientation="horizontal"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:baselineAligned="false">
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="ua.pp.lab101.synthesizercontrol.activity.accessory.AddItemToFreqScanActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/additem_freq_scan_frequency_from"
-            android:id="@+id/frequencyFromTv" />
-
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:ems="10"
-            android:id="@+id/frequencyFromEditText" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/additem_freq_scan_frequency_step"
-            android:id="@+id/frequencyStepTv" />
-
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:ems="10"
-            android:id="@+id/frequencySrepEditText" />
-
-    </LinearLayout>
+        android:text="@string/additem_freq_scan_main_title"
+        android:textSize="18sp" />
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/additem_freq_scan_frequency_to"
-            android:id="@+id/frequencyToTv" />
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <EditText
+            <TextView
+                android:id="@+id/frequencyFromTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/additem_freq_scan_frequency_from" />
+
+            <EditText
+                android:id="@+id/frequencyFromEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="numberDecimal" />
+
+            <TextView
+                android:id="@+id/frequencyStepTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/additem_freq_scan_frequency_step" />
+
+            <EditText
+                android:id="@+id/frequencySrepEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="numberDecimal" />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:ems="10"
-            android:id="@+id/frequencyToEditText" />
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/additem_freq_scan_time_step"
-            android:id="@+id/timeStepTv" />
+            <TextView
+                android:id="@+id/frequencyToTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/additem_freq_scan_frequency_to" />
 
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:ems="10"
-            android:id="@+id/timeStepEditText" />
+            <EditText
+                android:id="@+id/frequencyToEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="numberDecimal" />
+
+            <TextView
+                android:id="@+id/timeStepTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/additem_freq_scan_time_step" />
+
+            <EditText
+                android:id="@+id/timeStepEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="numberDecimal" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
 
     <Button
+        android:id="@+id/addFreqScanApply"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/additem_freq_scan_apply_btn_title"
-        android:id="@+id/addFreqScanApply"
         android:textColor="#ff000000" />
 
 </LinearLayout>

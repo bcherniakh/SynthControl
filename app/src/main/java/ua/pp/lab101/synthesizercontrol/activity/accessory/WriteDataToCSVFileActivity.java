@@ -1,11 +1,11 @@
 package ua.pp.lab101.synthesizercontrol.activity.accessory;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Environment;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -27,7 +27,7 @@ import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.FrequencyScanModeFragment;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.SchedulerModeFragment;
 
-public class WriteDataToCSVFileActivity extends Activity implements View.OnClickListener {
+public class WriteDataToCSVFileActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String WRITE_FILE_TYPE_ID = "write_file_type";
     public static final int WRITE_SCHEDULE_FILE = 0;

@@ -37,10 +37,6 @@ public class BoardManagerService extends Service {
     public static final String INTENT_TASK_DONE = "ua.pp.lab101.synthesizercontrol.taskdone";
     public static final String INTENT_DEVICE_UNPLUGGED = "ua.pp.lab101.synthesizercontrol.deviceunplugged";
     public static final String INTENT_DEVICE_PLUGGED = "ua.pp.lab101.synthesizercontrol.deviceplugged";
-    public static final String TASK_TYPE = "ua.pp.lab101.synthesizercontrol.tasktype";
-    public static final int TASK_TYPE_SCHEDULE = 1;
-    public static final int TASK_TYPE_CONSTANT = 2;
-    public static final int TASK_TYPE_FREQUENCY_SCAN = 3;
 
     private static final int ONGOING_NOTIFICATION_ID = 1488;
     private static final String LOG_TAG = "BoardManager";
@@ -50,12 +46,12 @@ public class BoardManagerService extends Service {
     private NotificationCompat.Builder mNotificationBuilder;
 
     /*System elements. Context and usbdevice*/
-    private D2xxManager mFtdid2xx = null;
-    private FT_Device mFtDev = null;
+    private D2xxManager mFtdiManager = null;
+    private FT_Device mFt245rq = null;
     private int mDevCount = -1;
 
     /**/
-    private ADBoardController adf;
+    private ADBoardController mBoardController;
 
     /*workflow variables*/
     private boolean mDeviceConnected;
@@ -71,7 +67,7 @@ public class BoardManagerService extends Service {
         Log.d(LOG_TAG, "onCreate method");
 
         //getting an instance of Board controller
-        adf = ADBoardController.getInstance();
+        mBoardController = ADBoardController.getInstance();
 
         //if the service starts for the firs time it's status is idle.
         //Creating notification and declaring the service as foreground
@@ -92,10 +88,10 @@ public class BoardManagerService extends Service {
         filter.setPriority(500);
         this.registerReceiver(mUsbReceiver, filter);
 
-        //Opening the mFtdid2xx device
-        if (mFtdid2xx == null) {
+        //Opening the mFtdiManager device
+        if (mFtdiManager == null) {
             try {
-                mFtdid2xx = D2xxManager.getInstance(this);
+                mFtdiManager = D2xxManager.getInstance(this);
             } catch (D2xxManager.D2xxException e) {
                 e.printStackTrace();
                 Log.e(LOG_TAG, "Failed open FT245 device.");
@@ -115,16 +111,16 @@ public class BoardManagerService extends Service {
             return;
         }
 
-        mDevCount = mFtdid2xx.createDeviceInfoList(this);
+        mDevCount = mFtdiManager.createDeviceInfoList(this);
 
         if (mDevCount > 0) {
-            mFtDev = mFtdid2xx.openByIndex(this, openIndex);
-            if (mFtDev == null) {
+            mFt245rq = mFtdiManager.openByIndex(this, openIndex);
+            if (mFt245rq == null) {
                 Log.e(LOG_TAG, "Failed to open the device by index 0");
                 return;
             }
 
-            if (mFtDev.isOpen()) {
+            if (mFt245rq.isOpen()) {
                 setupTheDevice();
                 Log.d(LOG_TAG, "Device vas found and configured");
                 mDeviceConnected = true;
@@ -137,19 +133,19 @@ public class BoardManagerService extends Service {
     }
 
     private void setupTheDevice() {
-        mFtDev.resetDevice();
-        mFtDev.setBaudRate(9600);
-        mFtDev.setLatencyTimer((byte) 16);
-        mFtDev.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
-        writeData(adf.geiInitianCommanSequence());
+        mFt245rq.resetDevice();
+        mFt245rq.setBaudRate(9600);
+        mFt245rq.setLatencyTimer((byte) 16);
+        mFt245rq.setBitMode((byte) 0x0f, D2xxManager.FT_BITMODE_ASYNC_BITBANG);
+        writeData(mBoardController.geiInitianCommanSequence());
     }
 
     public void onDestroy() {
         Log.d(LOG_TAG, "onDestroy method");
-        if (mFtDev != null && mFtDev.isOpen()) {
-            writeData(adf.turnOffTheDevice());
-            mFtDev.close();
-            mFtDev = null;
+        if (mFt245rq != null && mFt245rq.isOpen()) {
+            writeData(mBoardController.turnOffTheDevice());
+            mFt245rq.close();
+            mFt245rq = null;
         }
         this.unregisterReceiver(mUsbReceiver);
         super.onDestroy();
@@ -176,13 +172,13 @@ public class BoardManagerService extends Service {
     }
 
     private int writeDataToRegister(byte[] data) {
-        return mFtDev.write(data);
+        return mFt245rq.write(data);
     }
 
     private void shutdownDevice() {
         if (mDeviceConnected) {
             changeServiceStatus(ServiceStatus.IDLE);
-            writeData(adf.turnOffTheDevice());
+            writeData(mBoardController.turnOffTheDevice());
         } else {
             Log.e(LOG_TAG, "Turn off attempt. Device disconnected.");
         }
@@ -217,7 +213,6 @@ public class BoardManagerService extends Service {
                 break;
         }
     }
-
 
 
     public ServiceStatus getCurrentStatus() {
@@ -348,8 +343,8 @@ public class BoardManagerService extends Service {
     private void setFrequencyOnTheDevice(double frequencyValue) {
         if (mDeviceConnected) {
             mCurrentFrequency = frequencyValue;
-            writeData(adf.setFrequency(frequencyValue));
-            writeData(adf.turnOnDevice());
+            writeData(mBoardController.setFrequency(frequencyValue));
+            writeData(mBoardController.turnOnDevice());
         } else {
             Log.e(LOG_TAG, "Set frequency attempt. Device disconnected.");
         }
@@ -379,12 +374,11 @@ public class BoardManagerService extends Service {
                     }
                     mCurrentFrequency = roundValue(frequency[i]);
                     changeFrequencyVisualization();
-                    writeData(adf.setFrequency(frequency[i]));
-                    writeData(adf.turnOnDevice());
+                    writeData(mBoardController.setFrequency(frequency[i]));
+                    writeData(mBoardController.turnOnDevice());
                     try {
                         TimeUnit.MILLISECONDS.sleep(time[i]);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
                         interrupted = true;
                         Log.d(LOG_TAG, "Pause was interrupted");
                         break;
@@ -403,7 +397,6 @@ public class BoardManagerService extends Service {
             Log.d(LOG_TAG, "Task ends");
             shutdownDevice();
             Intent intent = new Intent(INTENT_TASK_DONE);
-            intent.putExtra(TASK_TYPE, TASK_TYPE_SCHEDULE);
             sendBroadcast(intent);
         }
     }

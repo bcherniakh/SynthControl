@@ -13,8 +13,8 @@
     <!--Constant fragment resources-->
     <string name="const_fragment_title">Режим постійного значення</string>
     <string name="const_enter_data">Задайте значення частоти в МГц:</string>
-    <string name="const_toggle_on">Ввімкнути</string>
-    <string name="const_toggle_off">Вимкнути</string>
+    <string name="common_start_task_btn_toggle_on">Старт</string>
+    <string name="common_start_task_btn_toggle_off">Стоп</string>
     <string name="const_btn_apply_frequency">Застосувати</string>
     <string name="const_msg_device_found">Пристрій було знайлено та проініціалізовано</string>
     <string name="const_msg_frequency_input_err">Помилка введення частоти</string>

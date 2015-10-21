@@ -1,16 +1,14 @@
 package ua.pp.lab101.synthesizercontrol.activity.accessory;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,7 +16,7 @@ import java.math.RoundingMode;
 import ua.pp.lab101.synthesizercontrol.R;
 import ua.pp.lab101.synthesizercontrol.activity.main.fragments.FrequencyScanModeFragment;
 
-public class AddItemToFreqScanActivity extends Activity {
+public class AddItemToFreqScanActivity extends AppCompatActivity {
     private static final String LOG_TAG = "Add Item to fs list";
 
     public static final String RUN_TYPE_ID = "run_type";
@@ -26,18 +24,20 @@ public class AddItemToFreqScanActivity extends Activity {
     public static final int EDIT_RUN = 1;
 
     private EditText mFrequencyFromET;
-    private EditText mFrequencyToTE;
+    private EditText mFrequencyToET;
     private EditText mFrequencyStepET;
     private EditText mTimeStepET;
     private Button mApplyBtn;
     private int mRunType = 0;
+
+    private String mSavedData = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_item_to_freq_scan);
         mFrequencyFromET = (EditText) findViewById(R.id.frequencyFromEditText);
-        mFrequencyToTE = (EditText) findViewById(R.id.frequencyToEditText);
+        mFrequencyToET = (EditText) findViewById(R.id.frequencyToEditText);
         mFrequencyStepET = (EditText) findViewById(R.id.frequencySrepEditText);
         mTimeStepET = (EditText) findViewById(R.id.timeStepEditText);
         mApplyBtn = (Button) findViewById(R.id.addFreqScanApply);
@@ -52,6 +52,18 @@ public class AddItemToFreqScanActivity extends Activity {
             );
         }
 
+        if (mFrequencyFromET != null) {
+            setFocusListener(mFrequencyFromET);
+            setFocusListener(mFrequencyToET);
+            setFocusListener(mFrequencyStepET);
+            setFocusListener(mTimeStepET);
+
+            setOnClickListener(mFrequencyFromET);
+            setOnClickListener(mFrequencyToET);
+            setOnClickListener(mFrequencyStepET);
+            setOnClickListener(mTimeStepET);
+        }
+
         Intent intent = getIntent();
         mRunType = intent.getIntExtra(RUN_TYPE_ID, ADD_RUN);
         if (mRunType == EDIT_RUN) {
@@ -61,15 +73,43 @@ public class AddItemToFreqScanActivity extends Activity {
             String timeStepText = intent.getStringExtra(FrequencyScanModeFragment.ATTRIBUTE_TIME_STEP);
 
             mFrequencyFromET.setText(fromFrequencyText);
-            mFrequencyToTE.setText(toFrequencyText);
+            mFrequencyToET.setText(toFrequencyText);
             mFrequencyStepET.setText(frequencyStepText);
             mTimeStepET.setText(timeStepText);
         } else {
             mFrequencyFromET.setText("0.0");
-            mFrequencyToTE.setText("0.0");
+            mFrequencyToET.setText("0.0");
             mFrequencyStepET.setText("0.0");
             mTimeStepET.setText("0.0");
         }
+    }
+
+    private void setFocusListener(final EditText editText) {
+        if (editText == null) return;
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (editText.isFocused()) {
+                    mSavedData = editText.getText().toString();
+                    editText.getText().clear();
+                } else {
+                    if (editText.getText().toString().isEmpty()) {
+                        editText.setText(mSavedData);
+                    }
+                }
+            }
+        });
+    }
+
+    private void setOnClickListener (final EditText editText) {
+        if (editText == null) return;
+
+        editText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editText.clearFocus();
+            }
+        });
     }
 
     private void buttonApplyPressed() {
@@ -79,7 +119,7 @@ public class AddItemToFreqScanActivity extends Activity {
         double timeStep;
         try {
             fromFrequency = Double.parseDouble(mFrequencyFromET.getText().toString());
-            toFrequency = Double.parseDouble(mFrequencyToTE.getText().toString());
+            toFrequency = Double.parseDouble(mFrequencyToET.getText().toString());
             frequencyStep = Double.parseDouble(mFrequencyStepET.getText().toString());
             timeStep = Double.parseDouble(mTimeStepET.getText().toString());
         } catch (Exception e) {
@@ -151,7 +191,7 @@ public class AddItemToFreqScanActivity extends Activity {
     }
 
     private boolean checkTimeStepValue(double timeStep) {
-        if ((timeStep >= 0.001) && (timeStep <= 6*3600)) return true;
+        if ((timeStep >= 0.001) && (timeStep <= 6 * 3600)) return true;
         return false;
     }
 

@@ -1,8 +1,9 @@
 package ua.pp.lab101.synthesizercontrol.activity.main.fragments;
 
-import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -27,7 +28,6 @@ import ua.pp.lab101.synthesizercontrol.service.task.Task;
  * The fragment does not shuts down the synthesizer when loses focus.
  */
 public class ConstantModeFragment extends Fragment {
-
     private BoardManagerService mService;
     private boolean mBound;
 
@@ -36,7 +36,9 @@ public class ConstantModeFragment extends Fragment {
 
     /*View elements: */
     private ToggleButton mPowerBtn = null;
-    private EditText mFrequencyValue;
+    private EditText mFrequencyValueEt;
+
+    private String mFrequencyValueData;
 
     public ConstantModeFragment() {
     }
@@ -44,8 +46,8 @@ public class ConstantModeFragment extends Fragment {
     /*Fragment lifecycle methods */
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         setRetainInstance(true);
     }
 
@@ -54,8 +56,7 @@ public class ConstantModeFragment extends Fragment {
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_constant_mode, container, false);
-        return view;
+        return inflater.inflate(R.layout.fragment_constant_mode, container, false);
 
     }
 
@@ -63,12 +64,35 @@ public class ConstantModeFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mPowerBtn = (ToggleButton) getActivity().findViewById(R.id.powerBtn);
-        mFrequencyValue = (EditText) getActivity().findViewById(R.id.frequencyValue);
+        mFrequencyValueEt = (EditText) getActivity().findViewById(R.id.frequencyValue);
         if (mPowerBtn != null) {
             mPowerBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     buttonSendPressed();
+                }
+            });
+        }
+
+        if (mFrequencyValueEt != null) {
+            mFrequencyValueEt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (mFrequencyValueEt.isFocused()) {
+                        mFrequencyValueData = mFrequencyValueEt.getText().toString();
+                        mFrequencyValueEt.getText().clear();
+                    } else {
+                        if (mFrequencyValueEt.getText().toString().isEmpty()) {
+                            mFrequencyValueEt.setText(mFrequencyValueData);
+                        }
+                    }
+                }
+            });
+
+            mFrequencyValueEt.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mFrequencyValueEt.clearFocus();
                 }
             });
         }
@@ -86,13 +110,13 @@ public class ConstantModeFragment extends Fragment {
         if (mService != null) {
             ServiceStatus currentStatus = mService.getCurrentStatus();
             if (currentStatus.equals(ServiceStatus.CONSTANT_MODE)) {
-                mFrequencyValue.setText(String.valueOf(mService.getCurrentFrequency()));
-                mFrequencyValue.setEnabled(false);
+                mFrequencyValueEt.setText(String.valueOf(mService.getCurrentFrequency()));
+                mFrequencyValueEt.setEnabled(false);
                 mPowerBtn.setChecked(true);
             } else {
                 mService.stopAnyWorkingTask();
-                mFrequencyValue.setText(String.valueOf(0.0));
-                mFrequencyValue.setEnabled(true);
+                mFrequencyValueEt.setText(String.valueOf(0.0));
+                mFrequencyValueEt.setEnabled(true);
                 mPowerBtn.setChecked(false);
             }
         }
@@ -119,6 +143,10 @@ public class ConstantModeFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    }
+
     /*Main logic methods*/
     public void buttonSendPressed() {
         if (mService == null) {
@@ -128,7 +156,7 @@ public class ConstantModeFragment extends Fragment {
         if (mPowerBtn.isChecked()) {
             double frequencyValue = 0;
             try {
-                frequencyValue = Double.parseDouble(mFrequencyValue.getText().toString());
+                frequencyValue = Double.parseDouble(mFrequencyValueEt.getText().toString());
                 frequencyValue = new BigDecimal(frequencyValue).setScale(3, RoundingMode.HALF_EVEN).doubleValue();
             } catch (Exception parseException) {
                 Log.e(LOG_TAG, "Parse double error occurred");
@@ -158,14 +186,15 @@ public class ConstantModeFragment extends Fragment {
             Log.i(LOG_TAG, "Value to be set: " + Double.toString(frequencyValue) + " MHz");
             Task task = new Task(frequencyValue);
             mService.performTask(task);
-            mFrequencyValue.setEnabled(false);
+            mFrequencyValueEt.setEnabled(false);
         } else {
             //stopping service
             Log.i(LOG_TAG, "Button toggled off");
-            mFrequencyValue.setEnabled(true);
+            mFrequencyValueEt.setEnabled(true);
             mService.stopAnyWorkingTask();
         }
     }
+
     private BoardManagerService getService(){
         BoardManagerService service = null;
         try {

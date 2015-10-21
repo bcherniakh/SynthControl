@@ -1,7 +1,6 @@
 package ua.pp.lab101.synthesizercontrol.service.task;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 
 /**
  * Task is class that presents the current mConstantFrequency in MHz and time of action in seconds

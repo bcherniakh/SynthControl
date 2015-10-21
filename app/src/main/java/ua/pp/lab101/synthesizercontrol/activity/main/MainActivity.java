@@ -9,14 +9,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.os.IBinder;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import ua.pp.lab101.synthesizercontrol.R;
@@ -27,7 +30,7 @@ import ua.pp.lab101.synthesizercontrol.activity.main.fragments.SchedulerModeFrag
 import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends AppCompatActivity
         implements OperationModeFragment.OperationModeListener, IServiceDistributor{
     /*Service members*/
     private BoardManagerService mService;
@@ -42,6 +45,7 @@ public class MainActivity extends ActionBarActivity
     private ConstantModeFragment mConstantModeFragment = new ConstantModeFragment();
     private SchedulerModeFragment mSchedulerModeFragment = new SchedulerModeFragment();
     private FrequencyScanModeFragment mFrequencyScanFragment = new FrequencyScanModeFragment();
+    private ActionBar mMainActionBar;
 
     private static final String LOG_TAG = "SControlMain";
 
@@ -52,7 +56,7 @@ public class MainActivity extends ActionBarActivity
 
         setContentView(R.layout.activity_main);
         ModesTitleArray = getResources().getStringArray(R.array.operation_modes);
-        mFragmentManager = getFragmentManager();
+        mFragmentManager = getSupportFragmentManager();
         if (savedInstanceState == null) {
             Log.d(LOG_TAG, "Rebuilding fragments");
             FragmentTransaction fragmentTransaction = mFragmentManager
@@ -64,6 +68,15 @@ public class MainActivity extends ActionBarActivity
 
         startService(new Intent(this, BoardManagerService.class));
 
+
+        //Making and enabling the custom layout for ActionBar to display current frequency and state
+        mMainActionBar = getSupportActionBar();
+        mMainActionBar.setDisplayShowHomeEnabled(false);
+        mMainActionBar.setDisplayShowTitleEnabled(false);
+        LayoutInflater mInflater = LayoutInflater.from(this);
+        View mCustomView = mInflater.inflate(R.layout.action_bar_main, null);
+        mMainActionBar.setCustomView(mCustomView);
+        mMainActionBar.setDisplayShowCustomEnabled(true);
         /*binding the BoardManagerService */
         Intent intent = new Intent(this, BoardManagerService.class);
         if (!mBound) {
