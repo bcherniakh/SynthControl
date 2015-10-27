@@ -5,12 +5,29 @@
     <string name="common_start_task_btn_toggle_on">Start</string>
     <string name="common_start_task_btn_toggle_off">Stop</string>
 
+    <string name="common_device_status_connected">device connected</string>
+    <string name="common_device_status_found">device found</string>
+    <string name="common_device_status_idle">idle</string>
+    <string name="common_device_status_disconnected">device is disconnected</string>
+    <string name="common_device_status_constant">constant mode</string>
+    <string name="common_device_status_schedule">schedule mode</string>
+    <string name="common_device_status_freqscan">frequency scan</string>
+
     <!--Fragment titles-->
     <string name="main_constant_title">Constant mode</string>
     <string name="main_scheduler_title">Schedule mode</string>
     <string name="main_dialog_device_unplugged_title">Device have been unplugged!</string>
     <string name="main_dialog_device_unplugged_message">Sorry, device have been unplugged</string>
-    <string name="main_dialog_device_unplugged_cancel_btn">Ok!</string>
+    <string name="main_dialog_device_unplugged_cancel_btn">OK!</string>
+
+    <!--Action bar resources -->
+    <string name="action_bar_status_title">Current status:</string>
+    <string name="action_bar_frequency_title">FREQUENCY:</string>
+    <string name="action_bar_frequency_default">0.0</string>
+    <string name="action_bar_frequency_units">MHz</string>
+    <string name="action_bar_status_default">unknown status</string>
+    <string name="action_bar_menu_stop_service">Stop service</string>
+    <string name="action_bar_menu_restart_application">Restart</string>
 
     <!--Constant fragment resources-->
     <string name="const_fragment_title">Constant mode</string>
@@ -27,7 +44,6 @@
     <string name="scheduler_btn_add_item">Add item</string>
     <string name="scheduler_menu_entry_delete_item">Delete item</string>
     <string name="scheduler_menu_entry_edit_item">Edit item</string>
-    <string name="action_stop_service">Stop service</string>
     <string name="scheduler_btn_start">Apply</string>
     <string name="schedule_list_header_frequency">Frequency (Mhz)</string>
     <string name="schedule_list_header_time">Time (sec)</string>
@@ -59,13 +75,6 @@
     <!--BoardManagerService service resourses-->
     <string name="bms_notif_title">Board manager</string>
     <string name="bms_notif_content_title">Current status: </string>
-    <string name="bms_notif_content_status_disconnected">device is disconnected</string>
-    <string name="bms_notif_content_connected">device connected</string>
-    <string name="bms_notif_content_staus_found">Device found</string>
-    <string name="bms_notif_content_status_idle">idle</string>
-    <string name="bms_notif_content_status_constant">constant mode</string>
-    <string name="bms_notif_content_status_schedule">schedule mode</string>
-    <string name="bms_notif_content_status_freqscan">frequency scan</string>
     <string name="bms_notif_subcont_title">Frequency (MHz):</string>
     <string name="bms_notif_subcont_none">none</string>
     <string name="bms_notif_subcont_plase_tap">Please, give a proper permission than tap to connect!</string>
@@ -78,7 +87,7 @@
     <string name="read_dialog_error_title">An error occurred</string>
     <string name="read_dialog_error_no_storage">Please check the availability of the external storage and try again</string>
     <string name="read_dialog_error_no_folder">No directory found on SD card</string>
-    <string name="read_dialog_error_no_storage_okbutton">Ok</string>
+    <string name="read_dialog_error_no_storage_okbutton">OK</string>
     <string name="read_toast_error_select_entry">Please, select file. Than press Open File.</string>
     <string name="read_dialog_error_parse_error">Error with data on line </string>
     <string name="read_dialog_error_frequency_range">Frequency is out of the range 35 Mhz to 4.4 GHz on line</string>
@@ -122,8 +131,8 @@
     <string name="additem_freq_scan_time_step">Time step (s)</string>
     <string name="additem_freq_scan_apply_btn_title">Apply</string>
     <string name="additem_freq_scan_toast_frequency_range">Frequency is out of the range 35 Mhz - 4.4 GHz</string>
-    <string name="additem_freq_scan_toast_step_incorrect">Frequency step is out of range range 1 KHz  - 1 GHz</string>
-    <string name="additem_freq_scan_toast_time_incorrect">Time step if out of the range range 1 ms - 6 hour</string>
+    <string name="additem_freq_scan_toast_step_incorrect">Frequency step is out of range 1 KHz  - 1 GHz</string>
+    <string name="additem_freq_scan_toast_time_incorrect">Time step if out of the range 1 ms - 6 hour</string>
     <string name="additem_freq_scan_toast_from_to">Value from is greater or equal to the value to</string>
     <string name="additem_title_activity_add_item_to_freq_scan">Add item to frequency scan task list</string>
     <string name="additem_freq_scan_msg_parse_error">Some fields are filled incorrect</string>

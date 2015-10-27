@@ -27,7 +27,7 @@
     <string name="scheduler_btn_add_item">Добавить пункт</string>
     <string name="scheduler_menu_entry_delete_item">Удалить пункт</string>
     <string name="scheduler_menu_entry_edit_item">Изменить пункт</string>
-    <string name="action_stop_service">Остановить сервис</string>
+    <string name="action_bar_menu_stop_service">Остановить сервис</string>
     <string name="scheduler_btn_start">Применить</string>
     <string name="schedule_list_header_frequency">Частота (МГц)</string>
     <string name="schedule_list_header_time">Время (с)</string>
@@ -59,13 +59,13 @@
     <!--BoardManagerService service resourses-->
     <string name="bms_notif_title">Управление устройством</string>
     <string name="bms_notif_content_title">Текущий статус: </string>
-    <string name="bms_notif_content_status_disconnected">устройство отключено</string>
-    <string name="bms_notif_content_connected">устройство подключено</string>
-    <string name="bms_notif_content_staus_found">устройство найдено</string>
-    <string name="bms_notif_content_status_idle">простой</string>
-    <string name="bms_notif_content_status_constant">постоянное значений</string>
-    <string name="bms_notif_content_status_schedule">расписание</string>
-    <string name="bms_notif_content_status_freqscan">перебор частот</string>
+    <string name="common_device_status_disconnected">устройство отключено</string>
+    <string name="common_device_status_connected">устройство подключено</string>
+    <string name="common_device_status_found">устройство найдено</string>
+    <string name="common_device_status_idle">простой</string>
+    <string name="common_device_status_constant">постоянное значений</string>
+    <string name="common_device_status_schedule">расписание</string>
+    <string name="common_device_status_freqscan">перебор частот</string>
     <string name="bms_notif_subcont_title">Частота (МГц):</string>
     <string name="bms_notif_subcont_none">нет</string>
     <string name="bms_notif_subcont_plase_tap">Пожалуйста, предоставьте необходимые разрешения и нажмите для подключения</string>

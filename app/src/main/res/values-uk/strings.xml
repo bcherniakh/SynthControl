@@ -27,7 +27,7 @@
     <string name="scheduler_btn_add_item">Додати пункт</string>
     <string name="scheduler_menu_entry_delete_item">Видалити пункт</string>
     <string name="scheduler_menu_entry_edit_item">Змінити пункт</string>
-    <string name="action_stop_service">Зупинити сервіс</string>
+    <string name="action_bar_menu_stop_service">Зупинити сервіс</string>
     <string name="scheduler_btn_start">Застосувати</string>
     <string name="schedule_list_header_frequency">Частота (МГц)</string>
     <string name="schedule_list_header_time">Час (с)</string>
@@ -59,13 +59,13 @@
     <!--BoardManagerService service resourses-->
     <string name="bms_notif_title">Керування пристроєм</string>
     <string name="bms_notif_content_title">Поточний статус: </string>
-    <string name="bms_notif_content_status_disconnected">пристрій відключено</string>
-    <string name="bms_notif_content_connected">пристрій підключено</string>
-    <string name="bms_notif_content_staus_found">пристрій знайдено</string>
-    <string name="bms_notif_content_status_idle">простій</string>
-    <string name="bms_notif_content_status_constant">постійне значення</string>
-    <string name="bms_notif_content_status_schedule">рокзлад</string>
-    <string name="bms_notif_content_status_freqscan">пребір частот</string>
+    <string name="common_device_status_disconnected">пристрій відключено</string>
+    <string name="common_device_status_connected">пристрій підключено</string>
+    <string name="common_device_status_found">пристрій знайдено</string>
+    <string name="common_device_status_idle">простій</string>
+    <string name="common_device_status_constant">постійне значення</string>
+    <string name="common_device_status_schedule">рокзлад</string>
+    <string name="common_device_status_freqscan">пребір частот</string>
     <string name="bms_notif_subcont_title">Частота (МГц):</string>
     <string name="bms_notif_subcont_none">нема</string>
     <string name="bms_notif_subcont_plase_tap">Будь ласка, надайте необхідний дозвіл та натисніть</string>

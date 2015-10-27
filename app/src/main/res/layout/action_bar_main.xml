@@ -3,29 +3,69 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="50dp"
+    android:layout_height="wrap_content"
     android:layout_gravity="fill_horizontal">
 
-    <TextView
-        android:id="@+id/title_text"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/actionBarLinearTop"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#f2a710"
-        android:textStyle="bold|italic"
-        android:text="FREQUENCY: 0000.00 MHz"
-        android:layout_centerVertical="true"
-        android:layout_alignParentEnd="false"
-        android:layout_below="@+id/textView2" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
-    <TextView
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/actionBarStatusTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_bar_status_title"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/actionBarStatusTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_bar_status_default"
+            android:layout_marginLeft="10dp"
+            android:textSize="18sp"
+            android:textColor="@color/darkred"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/actionBarLinearBottom"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Current state: turned off"
-        android:id="@+id/textView2"
-        android:textColor="#f2a710"
-        android:layout_alignLeft="@+id/title_text" />
+        android:layout_below="@id/actionBarLinearTop"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <TextView
+            android:id="@+id/actionBarFrequencyTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold|italic"
+            android:text="@string/action_bar_frequency_title" />
+        <TextView
+            android:id="@+id/actionBarFrequencyTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold|italic"
+            android:text="@string/action_bar_frequency_default"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/orange"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold|italic"
+            android:text="@string/action_bar_frequency_units"
+            android:layout_marginLeft="5dp" />
+    </LinearLayout>
 
 
 </RelativeLayout>

@@ -52,17 +52,16 @@ public class AddItemToFreqScanActivity extends AppCompatActivity {
             );
         }
 
-        if (mFrequencyFromET != null) {
-            setFocusListener(mFrequencyFromET);
-            setFocusListener(mFrequencyToET);
-            setFocusListener(mFrequencyStepET);
-            setFocusListener(mTimeStepET);
 
-            setOnClickListener(mFrequencyFromET);
-            setOnClickListener(mFrequencyToET);
-            setOnClickListener(mFrequencyStepET);
-            setOnClickListener(mTimeStepET);
-        }
+        setFocusListener(mFrequencyFromET);
+        setFocusListener(mFrequencyToET);
+        setFocusListener(mFrequencyStepET);
+        setFocusListener(mTimeStepET);
+
+        setOnClickListener(mFrequencyFromET);
+        setOnClickListener(mFrequencyToET);
+        setOnClickListener(mFrequencyStepET);
+        setOnClickListener(mTimeStepET);
 
         Intent intent = getIntent();
         mRunType = intent.getIntExtra(RUN_TYPE_ID, ADD_RUN);

@@ -8,5 +8,6 @@ public enum ServiceStatus {
     CONSTANT_MODE,
     SCHEDULE_MODE,
     FREQUENCY_SCAN_MODE,
+    DEVICE_FOUND,
     DEVICE_DISCONNECTED;
 }

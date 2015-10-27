@@ -122,7 +122,6 @@ public class ConstantModeFragment extends Fragment {
         }
     }
 
-
     @Override
     public void onPause() {
         super.onPause();

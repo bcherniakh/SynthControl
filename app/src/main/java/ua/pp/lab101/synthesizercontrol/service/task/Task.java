@@ -25,7 +25,7 @@ public class Task {
      * @param constantFrequency is constant frequency value in Mhz. Should not be negative
      */
     public Task(double constantFrequency) {
-        mTaskType = TaskType.CONSTANT_FREQUENCY_MODE;
+        mTaskType = TaskType.CONSTANT_FREQUENCY;
         if (constantFrequency <= 0) throw new IllegalArgumentException();
         this.mConstantFrequency = constantFrequency;
     }
@@ -38,7 +38,7 @@ public class Task {
      */
     public Task(double[] frequencyArray, int[] timeArray, boolean isCycled) {
         if (frequencyArray == null || timeArray == null) throw new IllegalArgumentException("task could not be null");
-        mTaskType = TaskType.SCHEDULE_MODE;
+        mTaskType = TaskType.SCHEDULE;
         this.frequencyArray = Arrays.copyOf(frequencyArray, frequencyArray.length);
         this.timeArray = Arrays.copyOf(timeArray, timeArray.length);
         this.mIsCycled = isCycled;
@@ -54,7 +54,7 @@ public class Task {
      * @param isCycled is flag that tells whether the task should be cycled.
      */
     public Task(double[] startFrequency, double[] finishFrequency, double[] frequencyStep, double[] timeStep, boolean isCycled) {
-        mTaskType = TaskType.FREQUENCY_SCAN_MODE;
+        mTaskType = TaskType.FREQUENCY_SCAN;
         mStartFrequency =  Arrays.copyOf(startFrequency, startFrequency.length);
         mFinishFrequency = Arrays.copyOf(finishFrequency, finishFrequency.length);
         mFrequencyStep = Arrays.copyOf(frequencyStep, frequencyStep.length);

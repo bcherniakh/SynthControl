@@ -35,6 +35,8 @@ public class BoardManagerService extends Service {
 
     //Broadcast messages
     public static final String INTENT_TASK_DONE = "ua.pp.lab101.synthesizercontrol.taskdone";
+    public static final String INTENT_FREQUENCY_CHANGED = "ua.pp.lab101.synthesizercontrol.frequencychanged";
+    public static final String INTENT_STATUS_CHANGED = "ua.pp.lab101.synthesizercontrol.statuschanged";
     public static final String INTENT_DEVICE_UNPLUGGED = "ua.pp.lab101.synthesizercontrol.deviceunplugged";
     public static final String INTENT_DEVICE_PLUGGED = "ua.pp.lab101.synthesizercontrol.deviceplugged";
 
@@ -88,6 +90,8 @@ public class BoardManagerService extends Service {
         filter.setPriority(500);
         this.registerReceiver(mUsbReceiver, filter);
 
+        changeServiceStatus(ServiceStatus.DEVICE_DISCONNECTED);
+
         //Opening the mFtdiManager device
         if (mFtdiManager == null) {
             try {
@@ -101,7 +105,6 @@ public class BoardManagerService extends Service {
 
         /*first run initialization*/
         mCurrentFrequency = 0;
-        changeServiceStatus(ServiceStatus.IDLE);
     }
 
     private void connectDevice() {
@@ -124,6 +127,7 @@ public class BoardManagerService extends Service {
                 setupTheDevice();
                 Log.d(LOG_TAG, "Device vas found and configured");
                 mDeviceConnected = true;
+                changeServiceStatus(ServiceStatus.IDLE);
             } else {
                 Log.e(LOG_TAG, "Permission error");
             }
@@ -155,7 +159,6 @@ public class BoardManagerService extends Service {
         Log.d(LOG_TAG, "onStart method called");
         if (!mDeviceConnected) {
             connectDevice();
-            changeServiceStatus(ServiceStatus.IDLE);
         }
         return START_NOT_STICKY;
     }
@@ -177,6 +180,7 @@ public class BoardManagerService extends Service {
 
     private void shutdownDevice() {
         if (mDeviceConnected) {
+            mCurrentFrequency = 0.0;
             changeServiceStatus(ServiceStatus.IDLE);
             writeData(mBoardController.turnOffTheDevice());
         } else {
@@ -185,6 +189,10 @@ public class BoardManagerService extends Service {
     }
 
     public void stopAnyWorkingTask() {
+        if (mServiceStatus.equals(ServiceStatus.IDLE) || mServiceStatus.equals(ServiceStatus.DEVICE_DISCONNECTED)) {
+            return;
+        }
+
         if (mServiceStatus.equals(ServiceStatus.SCHEDULE_MODE) || mServiceStatus.equals(ServiceStatus.FREQUENCY_SCAN_MODE)) {
             currentThreadTask.interrupt();
         }
@@ -197,17 +205,17 @@ public class BoardManagerService extends Service {
 
 
     public void performTask(Task task) {
-        if (mDeviceConnected == false) return;
+        if (!mDeviceConnected) return;
         TaskType currentTaskType = task.getTaskType();
         mCurrentTask = task;
         switch (currentTaskType) {
-            case CONSTANT_FREQUENCY_MODE:
+            case CONSTANT_FREQUENCY:
                 performConstantModeTask(task.getConstantFrequency());
                 break;
-            case SCHEDULE_MODE:
+            case SCHEDULE:
                 performScheduleTask(task.getFrequencyArray(), task.getTimeArray(), task.getIsCycled());
                 break;
-            case FREQUENCY_SCAN_MODE:
+            case FREQUENCY_SCAN:
                 performFrequencyScanTask(task.getStartFrequency(), task.getFinishFrequency(), task.getFrequencyStep(),
                         task.getTimeStep(), task.getIsCycled());
                 break;
@@ -258,7 +266,7 @@ public class BoardManagerService extends Service {
     }
 
     private int[] getTimeArray(double[] fromFrequencyArray, double[] toFrequencyArray, double[] frequencyStepArray, int[] timeStepArray) {
-        ArrayList<Integer> time = new ArrayList<Integer>();
+        ArrayList<Integer> time = new ArrayList<>();
 
         for (int i = 0; i < fromFrequencyArray.length; i++) {
             double startFrequency = 0;
@@ -403,63 +411,70 @@ public class BoardManagerService extends Service {
 
     private void changeServiceStatus(ServiceStatus newStatus) {
         String serviceStatusContent = "";
-        String serviceStatusSubtext = "";
         switch (newStatus) {
             case IDLE:
                 mServiceStatus = newStatus;
-                serviceStatusContent = (mDeviceConnected) ? getString(R.string.bms_notif_content_status_idle)
-                        : getString(R.string.bms_notif_content_status_disconnected);
-                serviceStatusSubtext = "0";
-                changeNotificationAll(serviceStatusContent, serviceStatusSubtext);
+                serviceStatusContent = (mDeviceConnected) ? getString(R.string.common_device_status_idle)
+                        : getString(R.string.common_device_status_disconnected);
+                changeStatusVisualisation(serviceStatusContent);
+                changeFrequencyVisualization();
                 break;
             case CONSTANT_MODE:
                 mServiceStatus = newStatus;
-                serviceStatusContent = getString(R.string.bms_notif_content_status_constant);
-                serviceStatusSubtext = String.valueOf(mCurrentFrequency);
-                changeNotificationAll(serviceStatusContent, serviceStatusSubtext);
+                serviceStatusContent = getString(R.string.common_device_status_constant);
+                changeStatusVisualisation(serviceStatusContent);
+                changeFrequencyVisualization();
                 break;
             case SCHEDULE_MODE:
                 mServiceStatus = newStatus;
-                serviceStatusContent = getString(R.string.bms_notif_content_status_schedule);
-                serviceStatusSubtext = String.valueOf(mCurrentFrequency);
-                changeNotificationAll(serviceStatusContent, serviceStatusSubtext);
+                serviceStatusContent = getString(R.string.common_device_status_schedule);
+                changeStatusVisualisation(serviceStatusContent);
                 break;
             case FREQUENCY_SCAN_MODE:
                 mServiceStatus = newStatus;
-                serviceStatusContent = getString(R.string.bms_notif_content_status_freqscan);
-                serviceStatusSubtext = String.valueOf(mCurrentFrequency);
-                changeNotificationAll(serviceStatusContent, serviceStatusSubtext);
+                serviceStatusContent = getString(R.string.common_device_status_freqscan);
+                changeStatusVisualisation(serviceStatusContent);
                 break;
             case DEVICE_DISCONNECTED:
                 mServiceStatus = newStatus;
                 mDeviceConnected = false;
                 mDevCount = -1;
-                serviceStatusContent = getString(R.string.bms_notif_content_status_disconnected);
-                changeNotificationAll(serviceStatusContent, "0");
+                serviceStatusContent = getString(R.string.common_device_status_disconnected);
+                changeStatusVisualisation(serviceStatusContent);
+                changeFrequencyVisualization();
+                break;
+            case DEVICE_FOUND:
+                mServiceStatus = newStatus;
+                changeNotificationAll(getString(R.string.common_device_status_found),
+                        getString(R.string.bms_notif_subcont_plase_tap));
                 break;
         }
 
+        Intent intent = new Intent(INTENT_STATUS_CHANGED);
+        intent.putExtra(INTENT_STATUS_CHANGED, newStatus);
+        sendBroadcast(intent);
+    }
+
+    private void changeStatusVisualisation(String statusString) {
+        changeNotificationContent(statusString);
     }
 
     private void changeFrequencyVisualization() {
         String frequencyString = String.valueOf(mCurrentFrequency);
         changeNotificationSubtext(frequencyString);
+        Intent intent = new Intent(INTENT_FREQUENCY_CHANGED);
+        intent.putExtra(INTENT_FREQUENCY_CHANGED, mCurrentFrequency);
+        sendBroadcast(intent);
     }
 
     private void changeNotificationAll(String content, String subtext) {
         Log.d(LOG_TAG, "method called. Text: " + content);
         if (content != null) {
-            String information = getString(R.string.bms_notif_content_title) + " "
-                    + content;
-            mNotificationBuilder.setContentText(information);
-            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+            changeNotificationContent(content);
         }
 
         if (subtext != null) {
-            String information = getString(R.string.bms_notif_subcont_title) + " "
-                    + subtext;
-            mNotificationBuilder.setSubText(information);
-            mNotificationManager.notify(ONGOING_NOTIFICATION_ID, mNotificationBuilder.build());
+            changeNotificationSubtext(subtext);
         }
     }
 
@@ -490,8 +505,6 @@ public class BoardManagerService extends Service {
         }
     }
 
-
-    /*Lol shitcode style test programming YOBA*/
     /*this BroadcastReceiver receives state change of the device connection and manage all
      *the changes in the Board service logic and enforces the control activity to change it
      *it state and visualize current situation.
@@ -507,10 +520,9 @@ public class BoardManagerService extends Service {
                 changeServiceStatus(ServiceStatus.DEVICE_DISCONNECTED);
             } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
                 Log.d(LOG_TAG, "Device attached!");
+                changeServiceStatus(ServiceStatus.DEVICE_FOUND);
                 Intent devicePluggedIntent = new Intent(INTENT_DEVICE_PLUGGED);
                 sendBroadcast(devicePluggedIntent);
-                changeNotificationAll(getString(R.string.bms_notif_content_staus_found),
-                        getString(R.string.bms_notif_subcont_plase_tap));
             }
         }
     };

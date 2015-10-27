@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.IBinder;
@@ -20,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import ua.pp.lab101.synthesizercontrol.R;
@@ -31,7 +33,7 @@ import ua.pp.lab101.synthesizercontrol.service.BoardManagerService;
 import ua.pp.lab101.synthesizercontrol.service.ServiceStatus;
 
 public class MainActivity extends AppCompatActivity
-        implements OperationModeFragment.OperationModeListener, IServiceDistributor{
+        implements OperationModeFragment.OperationModeListener, IServiceDistributor {
     /*Service members*/
     private BoardManagerService mService;
     private BoardManagerService.BoardManagerBinder mBinder;
@@ -46,6 +48,9 @@ public class MainActivity extends AppCompatActivity
     private SchedulerModeFragment mSchedulerModeFragment = new SchedulerModeFragment();
     private FrequencyScanModeFragment mFrequencyScanFragment = new FrequencyScanModeFragment();
     private ActionBar mMainActionBar;
+
+    private TextView mActionBarFrequencyTextView;
+    private TextView mActionBarStatusTextView;
 
     private static final String LOG_TAG = "SControlMain";
 
@@ -68,7 +73,6 @@ public class MainActivity extends AppCompatActivity
 
         startService(new Intent(this, BoardManagerService.class));
 
-
         //Making and enabling the custom layout for ActionBar to display current frequency and state
         mMainActionBar = getSupportActionBar();
         mMainActionBar.setDisplayShowHomeEnabled(false);
@@ -77,6 +81,10 @@ public class MainActivity extends AppCompatActivity
         View mCustomView = mInflater.inflate(R.layout.action_bar_main, null);
         mMainActionBar.setCustomView(mCustomView);
         mMainActionBar.setDisplayShowCustomEnabled(true);
+
+        mActionBarFrequencyTextView = (TextView) findViewById(R.id.actionBarFrequencyTextView);
+        mActionBarStatusTextView = (TextView) findViewById(R.id.actionBarStatusTextView);
+
         /*binding the BoardManagerService */
         Intent intent = new Intent(this, BoardManagerService.class);
         if (!mBound) {
@@ -95,12 +103,20 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         IntentFilter intentFilterDeviceUnplugged = new IntentFilter(BoardManagerService.INTENT_DEVICE_UNPLUGGED);
         registerReceiver(mDeviceUnpluggedReceiver, intentFilterDeviceUnplugged);
+
+        IntentFilter intentFilterFrequencyChanged = new IntentFilter(BoardManagerService.INTENT_FREQUENCY_CHANGED);
+        registerReceiver(mFrequencyChangedReceiver, intentFilterFrequencyChanged);
+
+        IntentFilter intentFilterStatusChanged = new IntentFilter(BoardManagerService.INTENT_STATUS_CHANGED);
+        registerReceiver(mStatusChangedReceiver, intentFilterStatusChanged);
     }
 
     @Override
     public void onPause() {
         Log.d(LOG_TAG, "onPause");
         unregisterReceiver(mDeviceUnpluggedReceiver);
+        unregisterReceiver(mFrequencyChangedReceiver);
+        unregisterReceiver(mStatusChangedReceiver);
         super.onPause();
     }
 
@@ -113,7 +129,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(LOG_TAG, "On stop acts!");
     }
 
     @Override
@@ -125,6 +140,7 @@ public class MainActivity extends AppCompatActivity
 //        }
         super.onDestroy();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -137,13 +153,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.action_stop_service) {
             if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
+                unbindService(mConnection);
+                mBound = false;
             }
             Intent intent = new Intent(this, BoardManagerService.class);
             stopService(intent);
             return true;
+        } else if (id == R.id.main_menu_action_restart_application) {
+            recreate();
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -216,6 +235,8 @@ public class MainActivity extends AppCompatActivity
                     onModeSelected(2);
                     break;
             }
+            changeFrequencyDisplay(mService.getCurrentFrequency());
+            changeStatusDisplay(currentStatus);
         }
 
         @Override
@@ -236,6 +257,56 @@ public class MainActivity extends AppCompatActivity
             showDeviceUnpluggedDialog();
         }
     };
+
+    private final BroadcastReceiver mFrequencyChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            double frequency = intent.getDoubleExtra(BoardManagerService.INTENT_FREQUENCY_CHANGED, 0.0);
+            changeFrequencyDisplay(frequency);
+        }
+    };
+
+    private final BroadcastReceiver mStatusChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ServiceStatus serviceStatus = (ServiceStatus) intent.getSerializableExtra(BoardManagerService.INTENT_STATUS_CHANGED);
+            if (serviceStatus != null) {
+                changeStatusDisplay(serviceStatus);
+            }
+        }
+    };
+
+    private void changeFrequencyDisplay(double frequency) {
+        mActionBarFrequencyTextView.setText(String.valueOf(frequency));
+    }
+    private void changeStatusDisplay(@NonNull ServiceStatus serviceStatus) {
+        switch (serviceStatus) {
+            case DEVICE_DISCONNECTED:
+                mActionBarStatusTextView.setText(getString(R.string.common_device_status_disconnected));
+                mActionBarStatusTextView.setTextColor(getResources().getColor(R.color.darkred));
+                break;
+            case IDLE:
+                mActionBarStatusTextView.setText(getString(R.string.common_device_status_idle));
+                mActionBarStatusTextView.setTextColor(getResources().getColor(R.color.darkorange));
+                break;
+            case CONSTANT_MODE:
+                mActionBarStatusTextView.setText(getString(R.string.common_device_status_constant));
+                mActionBarStatusTextView.setTextColor(getResources().getColor(R.color.darkgreen));
+                break;
+            case SCHEDULE_MODE:
+                mActionBarStatusTextView.setText(getString(R.string.common_device_status_schedule));
+                mActionBarStatusTextView.setTextColor(getResources().getColor(R.color.darkgreen));
+                break;
+            case FREQUENCY_SCAN_MODE:
+                mActionBarStatusTextView.setText(getString(R.string.common_device_status_freqscan));
+                mActionBarStatusTextView.setTextColor(getResources().getColor(R.color.darkgreen));
+                break;
+            case DEVICE_FOUND:
+                mActionBarStatusTextView.setText(getString(R.string.common_device_status_found));
+                mActionBarStatusTextView.setTextColor(getResources().getColor(R.color.darkpurple));
+                break;
+        }
+    }
 
     private void showToast(String text) {
         Toast toast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
